@@ -23,7 +23,6 @@ export function HeroSearch() {
         className="absolute top-5 right-[5%] w-[240px] h-[240px] rounded-full pointer-events-none"
         style={{ background: `radial-gradient(circle, ${t.gradientLavender}35 0%, transparent 70%)` }}
       />
-
       <h1 className="text-5xl font-light leading-[1.08] tracking-[-0.96px] text-ink font-display mb-3">
         Repository Intelligence
       </h1>

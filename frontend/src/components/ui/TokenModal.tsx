@@ -10,6 +10,7 @@ export function TokenModal({ onClose }: Props) {
   const { setToken, saved } = useGitHubToken()
 
   const save = async () => {
+    if (!val.trim()) return
     await setToken(val)
     setTimeout(onClose, 800)
   }
@@ -50,7 +51,7 @@ export function TokenModal({ onClose }: Props) {
             onClick={save}
             className="px-[18px] py-2 rounded-full bg-primary border-none text-sm font-medium text-on-primary cursor-pointer"
           >
-            {saved ? 'Saved âœ“' : 'Save token'}
+            {saved ? 'Saved“' : 'Save token'}
           </button>
         </div>
       </div>
