@@ -59,40 +59,6 @@ func (c *client) get(url string, out interface{}) error {
 	return json.NewDecoder(resp.Body).Decode(out)
 }
 
-// getWithRetry handles endpoints that return 202 while GitHub computes stats.
-// GitHub fires a background job on the first request; subsequent calls return
-// 200 once the job is done. We use exponential backoff so that cold repos
-// (which typically finish in 10–15 s) are covered without hammering the API.
-// Backoff schedule: 1s, 2s, 3s, 4s, 5s, 6s, 7s, 8s (8 attempts, ~36 s total).
-func (c *client) getWithRetry(url string, out interface{}) error {
-	const maxAttempts = 8
-	for attempt := 0; attempt < maxAttempts; attempt++ {
-		if attempt > 0 {
-			// Linear-ish backoff: 1s × attempt (1s, 2s, 3s … 7s)
-			time.Sleep(time.Duration(attempt) * time.Second)
-		}
-		req, err := c.newRequest(url)
-		if err != nil {
-			return err
-		}
-		resp, err := c.http.Do(req)
-		if err != nil {
-			return err
-		}
-		if resp.StatusCode == http.StatusAccepted {
-			resp.Body.Close()
-			continue
-		}
-		defer resp.Body.Close()
-		if resp.StatusCode != http.StatusOK {
-			body, _ := io.ReadAll(resp.Body)
-			return fmt.Errorf("HTTP %d: %s", resp.StatusCode, string(body))
-		}
-		return json.NewDecoder(resp.Body).Decode(out)
-	}
-	return fmt.Errorf("stats endpoint still returning 202 after %d attempts: %s", maxAttempts, url)
-}
-
 // ParseOwnerRepo extracts owner and repo from GitHub URL variants:
 //   - https://github.com/owner/repo
 //   - github.com/owner/repo
@@ -253,40 +219,12 @@ func FetchBundle(owner, repo, token string) types.RepoBundle {
 		mu.Unlock()
 	}()
 
-	// 5. 52-week commit activity (may return 202 while GitHub computes)
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		var raw []types.WeeklyCommitActivity
-		if err := c.getWithRetry(base+"/stats/commit_activity", &raw); err != nil {
-			fail("commit_activity", err.Error())
-			return
-		}
-		mu.Lock()
-		bundle.CommitActivity = raw
-		mu.Unlock()
-	}()
-
-	// 6. Per-contributor stats (may return 202 while GitHub computes)
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		var raw []types.ContributorStats
-		if err := c.getWithRetry(base+"/stats/contributors", &raw); err != nil {
-			fail("contrib_stats", err.Error())
-			return
-		}
-		mu.Lock()
-		bundle.ContribStats = raw
-		mu.Unlock()
-	}()
-
-	// 7. Recent activity feed
+	// 5. Recent activity feed
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
 		var raw []struct {
-			ID           int64 `json:"id"`
+			ID           int64  `json:"id"`
 			ActivityType string `json:"activity_type"`
 			Actor        struct {
 				Login string `json:"login"`

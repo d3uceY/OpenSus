@@ -57,60 +57,6 @@ export namespace types {
 	        this.html_url = source["html_url"];
 	    }
 	}
-	export class ContributorWeek {
-	    w: number;
-	    a: number;
-	    d: number;
-	    c: number;
-	
-	    static createFrom(source: any = {}) {
-	        return new ContributorWeek(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.w = source["w"];
-	        this.a = source["a"];
-	        this.d = source["d"];
-	        this.c = source["c"];
-	    }
-	}
-	export class ContributorStats {
-	    // Go type: struct { Login string "json:\"login\""; AvatarURL string "json:\"avatar_url\"" }
-	    author: any;
-	    total: number;
-	    weeks: ContributorWeek[];
-	
-	    static createFrom(source: any = {}) {
-	        return new ContributorStats(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.author = this.convertValues(source["author"], Object);
-	        this.total = source["total"];
-	        this.weeks = this.convertValues(source["weeks"], ContributorWeek);
-	    }
-	
-		convertValues(a: any, classs: any, asMap: boolean = false): any {
-		    if (!a) {
-		        return a;
-		    }
-		    if (a.slice && a.map) {
-		        return (a as any[]).map(elem => this.convertValues(elem, classs));
-		    } else if ("object" === typeof a) {
-		        if (asMap) {
-		            for (const key of Object.keys(a)) {
-		                a[key] = new classs(a[key]);
-		            }
-		            return a;
-		        }
-		        return new classs(a);
-		    }
-		    return a;
-		}
-	}
-	
 	export class ReleaseAsset {
 	    name: string;
 	    download_count: number;
@@ -175,22 +121,6 @@ export namespace types {
 	        this.name = source["name"];
 	    }
 	}
-	export class WeeklyCommitActivity {
-	    week: number;
-	    total: number;
-	    days: number[];
-	
-	    static createFrom(source: any = {}) {
-	        return new WeeklyCommitActivity(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.week = source["week"];
-	        this.total = source["total"];
-	        this.days = source["days"];
-	    }
-	}
 	export class RepoMeta {
 	    full_name: string;
 	    description: string;
@@ -248,8 +178,6 @@ export namespace types {
 	    contributors: Contributor[];
 	    releases: Release[];
 	    languages: Record<string, number>;
-	    commit_activity: WeeklyCommitActivity[];
-	    contrib_stats: ContributorStats[];
 	    activity: ActivityEvent[];
 	    branch_count: number;
 	    tags: Tag[];
@@ -267,8 +195,6 @@ export namespace types {
 	        this.contributors = this.convertValues(source["contributors"], Contributor);
 	        this.releases = this.convertValues(source["releases"], Release);
 	        this.languages = source["languages"];
-	        this.commit_activity = this.convertValues(source["commit_activity"], WeeklyCommitActivity);
-	        this.contrib_stats = this.convertValues(source["contrib_stats"], ContributorStats);
 	        this.activity = this.convertValues(source["activity"], ActivityEvent);
 	        this.branch_count = source["branch_count"];
 	        this.tags = this.convertValues(source["tags"], Tag);
@@ -294,7 +220,6 @@ export namespace types {
 		    return a;
 		}
 	}
-	
 	
 
 }
