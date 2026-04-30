@@ -1,5 +1,4 @@
 import { buildLangSlices } from '../../helpers/language'
-import { t } from '../../tokens'
 
 interface Props {
   langs: Record<string, number>
@@ -9,22 +8,29 @@ export function LanguageBar({ langs }: Props) {
   const items = buildLangSlices(langs)
 
   if (items.length === 0) {
-    return <span style={{ color: t.mutedSoft, fontSize: 14 }}>No data</span>
+    return <span className="text-muted-soft text-sm">No data</span>
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      <div style={{ display: 'flex', height: 8, borderRadius: 9999, overflow: 'hidden', gap: 2 }}>
+    <div className="flex flex-col gap-3">
+      <div className="flex h-2 rounded-full overflow-hidden gap-[2px]">
         {items.map(l => (
-          <div key={l.name} style={{ flex: l.pct, background: l.color, minWidth: 2 }} />
+          <div
+            key={l.name}
+            className="min-w-[2px]"
+            style={{ flex: l.pct, background: l.color }}
+          />
         ))}
       </div>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 16px' }}>
+      <div className="flex flex-wrap gap-x-4 gap-y-2">
         {items.map(l => (
-          <span key={l.name} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 14, color: t.body }}>
-            <span style={{ width: 10, height: 10, borderRadius: '50%', background: l.color, flexShrink: 0 }} />
+          <span key={l.name} className="flex items-center gap-1.5 text-sm text-body">
+            <span
+              className="w-2.5 h-2.5 rounded-full shrink-0"
+              style={{ background: l.color }}
+            />
             {l.name}
-            <span style={{ color: t.mutedSoft }}>{l.pct}%</span>
+            <span className="text-muted-soft">{l.pct}%</span>
           </span>
         ))}
       </div>
