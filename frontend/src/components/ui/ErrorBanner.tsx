@@ -1,5 +1,3 @@
-import { t } from '../../tokens'
-
 interface Props {
   errors: Record<string, string>
 }
@@ -9,25 +7,12 @@ export function ErrorBanner({ errors }: Props) {
   if (entries.length === 0) return null
 
   return (
-    <div style={{
-      background: '#fef2f2',
-      border: '1px solid #fecaca',
-      borderRadius: 12,
-      padding: '12px 16px',
-      marginBottom: 24,
-    }}>
-      <div style={{
-        fontSize: 12,
-        fontWeight: 600,
-        letterSpacing: '0.96px',
-        textTransform: 'uppercase',
-        color: t.semanticError,
-        marginBottom: 6,
-      }}>
+    <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 mb-6">
+      <div className="text-xs font-semibold tracking-[0.96px] uppercase text-semantic-error mb-1.5">
         Partial errors
       </div>
       {entries.map(([k, v]) => (
-        <div key={k} style={{ fontSize: 13, color: t.body }}>
+        <div key={k} className="text-[13px] text-body">
           <strong>{k}:</strong> {v}
         </div>
       ))}
