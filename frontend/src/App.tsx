@@ -6,6 +6,7 @@ import { TopNav } from './components/layout/TopNav'
 import { HeroSearch } from './components/layout/HeroSearch'
 import { EmptyState } from './components/layout/EmptyState'
 import { RepoResults } from './pages/RepoResults'
+import logo from './assets/opensus_logo.png'
 
 function AppShell() {
   const { bundle, loading } = useRepo()
@@ -15,7 +16,15 @@ function AppShell() {
       <div className="flex-1 overflow-y-auto">
         <TopNav />
         <HeroSearch />
-        {bundle ? <RepoResults /> : !loading && <EmptyState />}
+        {loading ? (
+          <div className="flex items-center justify-center" style={{ height: 'calc(100vh - 160px)' }}>
+            <img src={logo} alt="Loading…" className="h-16 w-auto animate-spin" style={{ animationDuration: '1.4s' }} />
+          </div>
+        ) : bundle ? (
+          <RepoResults />
+        ) : (
+          <EmptyState />
+        )}
       </div>
     </div>
   )
