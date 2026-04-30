@@ -31,6 +31,8 @@
   --color-gradient-rose: #e8b8c4;
   --color-semantic-error: #dc2626;
   --color-semantic-success: #16a34a;
+  --color-accent: #67BC23;
+  --color-accent-soft: oklch(from #67BC23 l c h / 0.12);
 
   --font-sans: 'Inter', sans-serif;
   --font-display: 'EB Garamond', 'Times New Roman', serif;

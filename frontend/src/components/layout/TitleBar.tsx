@@ -25,7 +25,7 @@ export function TitleBar() {
               onClick={() => BrowserOpenURL('https://github.com/d3uceY/OpenSus')}
               // @ts-ignore
               style={{ '--wails-draggable': 'no-drag' } as React.CSSProperties}
-              className="ml-1.5 px-1.5 py-0.5 rounded text-[10px] font-mono bg-surface-strong text-muted border border-hairline cursor-pointer hover:border-hairline-strong hover:text-ink transition-colors"
+              className="ml-1.5 px-1.5 py-0.5 rounded text-[10px] font-mono bg-surface-strong text-muted border border-hairline cursor-pointer hover:border-accent hover:text-accent transition-colors"
             >
               v{currentVersion}
             </button>

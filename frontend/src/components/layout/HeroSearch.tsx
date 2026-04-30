@@ -42,7 +42,7 @@ export function HeroSearch() {
             onKeyDown={e => e.key === 'Enter' && fetchRepo(false)}
             onFocus={() => setInputFocused(true)}
             onBlur={() => setInputFocused(false)}
-            className="w-full px-4 py-[10px] rounded-lg border border-hairline-strong text-[15px] text-ink bg-surface-card outline-none font-sans"
+            className="w-full px-4 py-[10px] rounded-lg border border-hairline-strong text-[15px] text-ink bg-surface-card outline-none font-sans focus:border-accent transition-colors"
           />
           {showPopover && (
             <HistoryPopover
@@ -56,8 +56,8 @@ export function HeroSearch() {
         <button
           onClick={() => fetchRepo(false)}
           disabled={loading || !url.trim()}
-          className={`flex items-center gap-2 px-[22px] py-[10px] rounded-full border-none text-[15px] font-medium text-on-primary transition-colors duration-150 ${
-            loading ? 'bg-muted cursor-default' : 'bg-primary cursor-pointer'
+          className={`flex items-center gap-2 px-[22px] py-[10px] rounded-full border-none text-[15px] font-medium transition-colors duration-150 ${
+            loading ? 'bg-muted text-on-primary cursor-default' : 'bg-primary hover:bg-accent text-on-primary cursor-pointer'
           }`}
         >
           <HugeiconsIcon icon={Search01Icon} size={15} className="text-on-primary" />

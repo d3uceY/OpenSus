@@ -14,7 +14,7 @@ export function HistoryPopover({ history, onSelect, onRemove, onClear }: Props) 
   return (
     <div className="absolute left-0 right-0 top-full mt-1 z-50 bg-surface-card border border-hairline rounded-xl shadow-[0_4px_24px_rgba(0,0,0,0.1)] overflow-hidden">
       <div className="flex items-center justify-between px-4 py-2 border-b border-hairline">
-        <span className="text-[11px] font-semibold tracking-[0.8px] uppercase text-muted">
+        <span className="text-[11px] font-semibold tracking-[0.8px] uppercase text-accent">
           Recent
         </span>
         <button
@@ -28,7 +28,7 @@ export function HistoryPopover({ history, onSelect, onRemove, onClear }: Props) 
         {history.map(url => (
           <li
             key={url}
-            className="flex items-center gap-2 px-4 py-[9px] hover:bg-surface-strong transition-colors group"
+            className="flex items-center gap-2 px-4 py-[9px] hover:bg-surface-strong border-l-2 border-transparent hover:border-accent transition-colors group"
           >
             <button
               onMouseDown={e => { e.preventDefault(); onSelect(url) }}
