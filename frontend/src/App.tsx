@@ -17,7 +17,7 @@ function AppShell() {
         <TopNav />
         <HeroSearch />
         {loading ? (
-          <div className="flex items-center justify-center" style={{ height: 'calc(100vh - 160px)' }}>
+          <div className="flex items-center justify-center" style={{ height: 'calc(50vh - 160px)' }}>
             <img src={logo} alt="Loading…" className="h-16 w-auto animate-spin" style={{ animationDuration: '1.4s' }} />
           </div>
         ) : bundle ? (
