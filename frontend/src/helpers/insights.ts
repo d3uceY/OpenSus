@@ -1,11 +1,11 @@
-import type { main } from '../../wailsjs/go/models'
+import type { types } from '../../wailsjs/go/models'
 
 /**
  * Returns the week with the highest commit total, or null if no data.
  */
 export function getMostActiveWeek(
-  weeks: main.WeeklyCommitActivity[] | null | undefined,
-): main.WeeklyCommitActivity | null {
+  weeks: types.WeeklyCommitActivity[] | null | undefined,
+): types.WeeklyCommitActivity | null {
   if (!weeks || weeks.length === 0) return null
   return weeks.reduce((best, w) => (w.total > best.total ? w : best))
 }
@@ -15,8 +15,8 @@ export function getMostActiveWeek(
  * or null if the data is unavailable.
  */
 export function getTopContribPercent(
-  contribStats: main.ContributorStats[] | null | undefined,
-  commitActivity: main.WeeklyCommitActivity[] | null | undefined,
+  contribStats: types.ContributorStats[] | null | undefined,
+  commitActivity: types.WeeklyCommitActivity[] | null | undefined,
 ): number | null {
   if (!contribStats?.length || !commitActivity?.length) return null
   const totalCommits = commitActivity.reduce((s, w) => s + w.total, 0)
@@ -36,7 +36,7 @@ export function getDaysSinceLastPush(pushedAt: string | null | undefined): numbe
 /**
  * Returns the sum of download counts across all releases.
  */
-export function getTotalDownloads(releases: main.Release[] | null | undefined): number {
+export function getTotalDownloads(releases: types.Release[] | null | undefined): number {
   if (!releases) return 0
   return releases.reduce((s, r) => s + r.total_downloads, 0)
 }
