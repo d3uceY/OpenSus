@@ -1,5 +1,3 @@
-import { t } from '../../tokens'
-
 interface Props {
   label: string
   value: string
@@ -8,36 +6,15 @@ interface Props {
 
 export function StatCard({ label, value, sub }: Props) {
   return (
-    <div style={{
-      background: t.surfaceCard,
-      border: `1px solid ${t.hairline}`,
-      borderRadius: 16,
-      padding: '20px 24px',
-      display: 'flex',
-      flexDirection: 'column',
-      gap: 4,
-    }}>
-      <span style={{
-        fontSize: 12,
-        fontWeight: 600,
-        letterSpacing: '0.96px',
-        textTransform: 'uppercase',
-        color: t.muted,
-      }}>
+    <div className="bg-surface-card border border-hairline rounded-2xl py-5 px-6 flex flex-col gap-1">
+      <span className="text-xs font-semibold tracking-[0.96px] uppercase text-muted">
         {label}
       </span>
-      <span style={{
-        fontSize: 32,
-        fontWeight: 300,
-        color: t.ink,
-        lineHeight: 1.13,
-        letterSpacing: '-0.32px',
-        fontFamily: "'EB Garamond', 'Times New Roman', serif",
-      }}>
+      <span className="text-[32px] font-light text-ink leading-[1.13] tracking-[-0.32px] font-display">
         {value}
       </span>
       {sub && (
-        <span style={{ fontSize: 14, color: t.mutedSoft }}>{sub}</span>
+        <span className="text-sm text-muted-soft">{sub}</span>
       )}
     </div>
   )
