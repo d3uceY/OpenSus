@@ -1,13 +1,13 @@
-import type { main } from '../../../wailsjs/go/models'
+import type { types } from '../../../wailsjs/go/models'
 import { t } from '../../tokens'
 
 interface Props {
-  weeks: main.WeeklyCommitActivity[]
+  weeks: types.WeeklyCommitActivity[]
 }
 
 export function CommitSparkline({ weeks }: Props) {
   if (!weeks || weeks.length === 0) {
-    return <span style={{ color: t.mutedSoft, fontSize: 14 }}>No data</span>
+    return <span className="text-muted-soft text-sm">No data</span>
   }
 
   const max = Math.max(...weeks.map(w => w.total), 1)
@@ -17,7 +17,7 @@ export function CommitSparkline({ weeks }: Props) {
   const totalW = weeks.length * (barW + gap)
 
   return (
-    <svg width={totalW} height={h} style={{ display: 'block' }}>
+    <svg width={totalW} height={h} className="block">
       {weeks.map((w, i) => {
         const barH = Math.max(2, Math.round((w.total / max) * h))
         return (
