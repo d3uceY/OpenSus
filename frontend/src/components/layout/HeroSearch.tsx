@@ -13,7 +13,7 @@ export function HeroSearch() {
   const showPopover = inputFocused && history.length > 0
 
   return (
-    <section className="pt-16 px-8 pb-12 max-w-300 mx-auto relative overflow-hidden">
+    <section className="pt-16 px-8 pb-12 max-w-300 mx-auto relative">
       {/* Atmospheric orbs */}
       <div
         className="absolute -top-15 left-[10%] w-[320px] h-[320px] rounded-full pointer-events-none"
