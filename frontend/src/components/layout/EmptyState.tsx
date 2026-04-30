@@ -2,7 +2,7 @@
 
 export function EmptyState() {
   return (
-    <div className="max-w-[1200px] mx-auto pt-8 px-8 pb-24 flex flex-col items-center gap-4">
+    <div className="max-w-300 mx-auto pt-8 px-8 pb-24 flex flex-col items-center gap-4">
       <div className="grid grid-cols-3 gap-4 w-full opacity-40">
         {[t.gradientMint, t.gradientPeach, t.gradientLavender].map((color, i) => (
           <div

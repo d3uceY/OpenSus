@@ -13,7 +13,7 @@ export function LanguageBar({ langs }: Props) {
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex h-2 rounded-full overflow-hidden gap-[2px]">
+      <div className="flex h-2 rounded-full overflow-hidden gap-0.5">
         {items.map(l => (
           <div
             key={l.name}

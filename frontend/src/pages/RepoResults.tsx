@@ -24,7 +24,7 @@ export function RepoResults() {
   const showInsights = mostActiveWeek || topContribPct !== null || daysSinceLastPush !== null
 
   return (
-    <main className="max-w-[1200px] mx-auto px-8 pb-24">
+    <main className="max-w-300 mx-auto px-8 pb-24">
       <RepoHeader meta={bundle.meta} cachedAt={bundle.cached_at} />
 
       {bundle.errors && <ErrorBanner errors={bundle.errors} />}
