@@ -2,7 +2,10 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"os"
+	"path/filepath"
 	"sync"
 
 	"OpenSus/backend/cache"
@@ -25,9 +28,87 @@ func NewApp() *App {
 	}
 }
 
-// startup is called when the app starts.
+// startup is called when the app starts. Creates the config directory if needed.
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
+	a.ensureConfigDir()
+}
+
+// historyPath returns the absolute path to history.json.
+func (a *App) historyPath() (string, error) {
+	base, err := os.UserConfigDir()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(base, "OpenSus", "history", "history.json"), nil
+}
+
+// ensureConfigDir creates the OpenSus/history directory if it doesn't exist.
+func (a *App) ensureConfigDir() {
+	path, err := a.historyPath()
+	if err != nil {
+		return
+	}
+	os.MkdirAll(filepath.Dir(path), 0755)
+}
+
+// saveHistory writes the history slice to disk.
+func (a *App) saveHistory(history []string) error {
+	path, err := a.historyPath()
+	if err != nil {
+		return err
+	}
+	data, err := json.Marshal(history)
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(path, data, 0644)
+}
+
+// LoadHistory returns the list of previously fetched repository URLs, newest first.
+func (a *App) LoadHistory() []string {
+	path, err := a.historyPath()
+	if err != nil {
+		return []string{}
+	}
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return []string{}
+	}
+	var history []string
+	if err := json.Unmarshal(data, &history); err != nil {
+		return []string{}
+	}
+	return history
+}
+
+// AddHistory prepends repoURL to history. Does nothing if already present.
+func (a *App) AddHistory(repoURL string) {
+	history := a.LoadHistory()
+	for _, h := range history {
+		if h == repoURL {
+			return
+		}
+	}
+	history = append([]string{repoURL}, history...)
+	a.saveHistory(history)
+}
+
+// DeleteHistory removes a specific URL from history.
+func (a *App) DeleteHistory(repoURL string) {
+	history := a.LoadHistory()
+	filtered := make([]string, 0, len(history))
+	for _, h := range history {
+		if h != repoURL {
+			filtered = append(filtered, h)
+		}
+	}
+	a.saveHistory(filtered)
+}
+
+// ClearHistory removes all history entries.
+func (a *App) ClearHistory() {
+	a.saveHistory([]string{})
 }
 
 // SetToken stores a GitHub Personal Access Token used for authenticated API requests.
@@ -54,6 +135,7 @@ func (a *App) FetchRepo(repoURL string) (types.RepoBundle, error) {
 	a.mu.RUnlock()
 	bundle := github.FetchBundle(owner, repo, tok)
 	a.cache.Set(key, bundle)
+	a.AddHistory(repoURL)
 	return bundle, nil
 }
 
@@ -70,6 +152,7 @@ func (a *App) ForceRefresh(repoURL string) (types.RepoBundle, error) {
 	a.mu.RUnlock()
 	bundle := github.FetchBundle(owner, repo, tok)
 	a.cache.Set(key, bundle)
+	a.AddHistory(repoURL)
 	return bundle, nil
 }
 
