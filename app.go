@@ -4,12 +4,16 @@ import (
 	"context"
 	"fmt"
 	"sync"
+
+	"OpenSus/backend/cache"
+	"OpenSus/backend/github"
+	"OpenSus/backend/types"
 )
 
 // App is the Wails application struct. All exported methods become IPC bindings.
 type App struct {
 	ctx   context.Context
-	cache *repoCache
+	cache *cache.RepoCache
 	mu    sync.RWMutex
 	token string
 }
@@ -17,7 +21,7 @@ type App struct {
 // NewApp creates a new App application struct.
 func NewApp() *App {
 	return &App{
-		cache: newRepoCache(),
+		cache: cache.New(),
 	}
 }
 
@@ -36,35 +40,36 @@ func (a *App) SetToken(token string) {
 
 // FetchRepo fetches and returns intelligence for the given GitHub repository URL.
 // Results are cached in memory for 5 minutes.
-func (a *App) FetchRepo(repoURL string) (RepoBundle, error) {
-	owner, repo, err := parseOwnerRepo(repoURL)
+func (a *App) FetchRepo(repoURL string) (types.RepoBundle, error) {
+	owner, repo, err := github.ParseOwnerRepo(repoURL)
 	if err != nil {
-		return RepoBundle{}, err
+		return types.RepoBundle{}, err
 	}
 	key := fmt.Sprintf("%s/%s", owner, repo)
-	if cached, ok := a.cache.get(key); ok {
+	if cached, ok := a.cache.Get(key); ok {
 		return cached, nil
 	}
 	a.mu.RLock()
 	tok := a.token
 	a.mu.RUnlock()
-	bundle := fetchBundle(owner, repo, tok)
-	a.cache.set(key, bundle)
+	bundle := github.FetchBundle(owner, repo, tok)
+	a.cache.Set(key, bundle)
 	return bundle, nil
 }
 
 // ForceRefresh bypasses the cache and re-fetches the repository data.
-func (a *App) ForceRefresh(repoURL string) (RepoBundle, error) {
-	owner, repo, err := parseOwnerRepo(repoURL)
+func (a *App) ForceRefresh(repoURL string) (types.RepoBundle, error) {
+	owner, repo, err := github.ParseOwnerRepo(repoURL)
 	if err != nil {
-		return RepoBundle{}, err
+		return types.RepoBundle{}, err
 	}
 	key := fmt.Sprintf("%s/%s", owner, repo)
-	a.cache.bust(key)
+	a.cache.Bust(key)
 	a.mu.RLock()
 	tok := a.token
 	a.mu.RUnlock()
-	bundle := fetchBundle(owner, repo, tok)
-	a.cache.set(key, bundle)
+	bundle := github.FetchBundle(owner, repo, tok)
+	a.cache.Set(key, bundle)
 	return bundle, nil
 }
+

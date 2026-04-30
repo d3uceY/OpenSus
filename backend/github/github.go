@@ -1,4 +1,4 @@
-package main
+package github
 
 import (
 	"encoding/json"
@@ -8,47 +8,50 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"OpenSus/backend/types"
 )
 
-const githubAPIBase = "https://api.github.com"
+const apiBase = "https://api.github.com"
 
-type githubClient struct {
-	httpClient *http.Client
-	token      string
+// client wraps an HTTP client and an optional GitHub PAT.
+type client struct {
+	http  *http.Client
+	token string
 }
 
-func newGitHubClient(token string) *githubClient {
-	return &githubClient{
-		httpClient: &http.Client{Timeout: 20 * time.Second},
-		token:      token,
+// newClient returns a configured GitHub API client.
+func newClient(token string) *client {
+	return &client{
+		http:  &http.Client{Timeout: 20 * time.Second},
+		token: token,
 	}
 }
 
-func (g *githubClient) newRequest(url string) (*http.Request, error) {
+func (c *client) newRequest(url string) (*http.Request, error) {
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
 	}
 	req.Header.Set("Accept", "application/vnd.github+json")
 	req.Header.Set("X-GitHub-Api-Version", "2022-11-28")
-	if g.token != "" {
-		req.Header.Set("Authorization", "Bearer "+g.token)
+	if c.token != "" {
+		req.Header.Set("Authorization", "Bearer "+c.token)
 	}
 	return req, nil
 }
 
-// get performs a GET request and decodes the JSON response into out.
-func (g *githubClient) get(url string, out interface{}) error {
-	req, err := g.newRequest(url)
+// get performs a GET and decodes the JSON body into out.
+func (c *client) get(url string, out interface{}) error {
+	req, err := c.newRequest(url)
 	if err != nil {
 		return err
 	}
-	resp, err := g.httpClient.Do(req)
+	resp, err := c.http.Do(req)
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
-
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(resp.Body)
 		return fmt.Errorf("HTTP %d: %s", resp.StatusCode, string(body))
@@ -57,17 +60,17 @@ func (g *githubClient) get(url string, out interface{}) error {
 }
 
 // getWithRetry handles endpoints that return 202 while GitHub computes stats.
-// It retries up to 3 times with a 2-second delay between attempts.
-func (g *githubClient) getWithRetry(url string, out interface{}) error {
+// It retries up to 3 times with a 2-second delay.
+func (c *client) getWithRetry(url string, out interface{}) error {
 	for attempt := 0; attempt < 3; attempt++ {
 		if attempt > 0 {
 			time.Sleep(2 * time.Second)
 		}
-		req, err := g.newRequest(url)
+		req, err := c.newRequest(url)
 		if err != nil {
 			return err
 		}
-		resp, err := g.httpClient.Do(req)
+		resp, err := c.http.Do(req)
 		if err != nil {
 			return err
 		}
@@ -85,11 +88,11 @@ func (g *githubClient) getWithRetry(url string, out interface{}) error {
 	return fmt.Errorf("stats endpoint returned 202 after 3 retries: %s", url)
 }
 
-// parseOwnerRepo extracts owner and repo name from various GitHub URL formats:
+// ParseOwnerRepo extracts owner and repo from GitHub URL variants:
 //   - https://github.com/owner/repo
 //   - github.com/owner/repo
 //   - owner/repo
-func parseOwnerRepo(repoURL string) (owner, repo string, err error) {
+func ParseOwnerRepo(repoURL string) (owner, repo string, err error) {
 	s := strings.TrimSpace(repoURL)
 	s = strings.TrimPrefix(s, "https://")
 	s = strings.TrimPrefix(s, "http://")
@@ -104,11 +107,11 @@ func parseOwnerRepo(repoURL string) (owner, repo string, err error) {
 	return parts[0], parts[1], nil
 }
 
-// fetchBundle calls all GitHub REST endpoints concurrently and returns a RepoBundle.
-// Individual endpoint errors are recorded in bundle.Errors; the call does not abort.
-func fetchBundle(owner, repo, token string) RepoBundle {
-	client := newGitHubClient(token)
-	bundle := RepoBundle{
+// FetchBundle calls all 9 GitHub REST endpoints concurrently and returns a RepoBundle.
+// Individual endpoint errors are recorded in bundle.Errors without aborting the fetch.
+func FetchBundle(owner, repo, token string) types.RepoBundle {
+	c := newClient(token)
+	bundle := types.RepoBundle{
 		Errors: make(map[string]string),
 	}
 
@@ -121,7 +124,7 @@ func fetchBundle(owner, repo, token string) RepoBundle {
 		mu.Unlock()
 	}
 
-	base := fmt.Sprintf("%s/repos/%s/%s", githubAPIBase, owner, repo)
+	base := fmt.Sprintf("%s/repos/%s/%s", apiBase, owner, repo)
 
 	// 1. Core metadata
 	wg.Add(1)
@@ -142,7 +145,7 @@ func fetchBundle(owner, repo, token string) RepoBundle {
 			PushedAt  time.Time `json:"pushed_at"`
 			HTMLURL   string    `json:"html_url"`
 		}
-		if err := client.get(base, &raw); err != nil {
+		if err := c.get(base, &raw); err != nil {
 			fail("meta", err.Error())
 			return
 		}
@@ -151,7 +154,7 @@ func fetchBundle(owner, repo, token string) RepoBundle {
 			license = raw.License.Name
 		}
 		mu.Lock()
-		bundle.Meta = RepoMeta{
+		bundle.Meta = types.RepoMeta{
 			FullName:    raw.FullName,
 			Description: raw.Description,
 			Stars:       raw.Stars,
@@ -177,17 +180,17 @@ func fetchBundle(owner, repo, token string) RepoBundle {
 			Contributions int    `json:"contributions"`
 			HTMLURL       string `json:"html_url"`
 		}
-		if err := client.get(base+"/contributors?per_page=10", &raw); err != nil {
+		if err := c.get(base+"/contributors?per_page=10", &raw); err != nil {
 			fail("contributors", err.Error())
 			return
 		}
-		result := make([]Contributor, len(raw))
-		for i, c := range raw {
-			result[i] = Contributor{
-				Login:         c.Login,
-				AvatarURL:     c.AvatarURL,
-				Contributions: c.Contributions,
-				HTMLURL:       c.HTMLURL,
+		result := make([]types.Contributor, len(raw))
+		for i, r := range raw {
+			result[i] = types.Contributor{
+				Login:         r.Login,
+				AvatarURL:     r.AvatarURL,
+				Contributions: r.Contributions,
+				HTMLURL:       r.HTMLURL,
 			}
 		}
 		mu.Lock()
@@ -207,19 +210,19 @@ func fetchBundle(owner, repo, token string) RepoBundle {
 				DownloadCount int    `json:"download_count"`
 			} `json:"assets"`
 		}
-		if err := client.get(base+"/releases?per_page=10", &raw); err != nil {
+		if err := c.get(base+"/releases?per_page=10", &raw); err != nil {
 			fail("releases", err.Error())
 			return
 		}
-		result := make([]Release, len(raw))
+		result := make([]types.Release, len(raw))
 		for i, r := range raw {
-			assets := make([]ReleaseAsset, len(r.Assets))
+			assets := make([]types.ReleaseAsset, len(r.Assets))
 			total := 0
 			for j, a := range r.Assets {
-				assets[j] = ReleaseAsset{Name: a.Name, DownloadCount: a.DownloadCount}
+				assets[j] = types.ReleaseAsset{Name: a.Name, DownloadCount: a.DownloadCount}
 				total += a.DownloadCount
 			}
-			result[i] = Release{
+			result[i] = types.Release{
 				TagName:        r.TagName,
 				PublishedAt:    r.PublishedAt,
 				Assets:         assets,
@@ -236,7 +239,7 @@ func fetchBundle(owner, repo, token string) RepoBundle {
 	go func() {
 		defer wg.Done()
 		var raw map[string]int64
-		if err := client.get(base+"/languages", &raw); err != nil {
+		if err := c.get(base+"/languages", &raw); err != nil {
 			fail("languages", err.Error())
 			return
 		}
@@ -249,8 +252,8 @@ func fetchBundle(owner, repo, token string) RepoBundle {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		var raw []WeeklyCommitActivity
-		if err := client.getWithRetry(base+"/stats/commit_activity", &raw); err != nil {
+		var raw []types.WeeklyCommitActivity
+		if err := c.getWithRetry(base+"/stats/commit_activity", &raw); err != nil {
 			fail("commit_activity", err.Error())
 			return
 		}
@@ -263,8 +266,8 @@ func fetchBundle(owner, repo, token string) RepoBundle {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		var raw []ContributorStats
-		if err := client.getWithRetry(base+"/stats/contributors", &raw); err != nil {
+		var raw []types.ContributorStats
+		if err := c.getWithRetry(base+"/stats/contributors", &raw); err != nil {
 			fail("contrib_stats", err.Error())
 			return
 		}
@@ -286,13 +289,13 @@ func fetchBundle(owner, repo, token string) RepoBundle {
 			Ref       string    `json:"ref"`
 			Timestamp time.Time `json:"timestamp"`
 		}
-		if err := client.get(base+"/activity?per_page=15", &raw); err != nil {
+		if err := c.get(base+"/activity?per_page=15", &raw); err != nil {
 			fail("activity", err.Error())
 			return
 		}
-		result := make([]ActivityEvent, len(raw))
+		result := make([]types.ActivityEvent, len(raw))
 		for i, a := range raw {
-			result[i] = ActivityEvent{
+			result[i] = types.ActivityEvent{
 				ID:        a.ID,
 				Type:      a.ActivityType,
 				Actor:     a.Actor.Login,
@@ -312,7 +315,7 @@ func fetchBundle(owner, repo, token string) RepoBundle {
 		var raw []struct {
 			Name string `json:"name"`
 		}
-		if err := client.get(base+"/branches?per_page=100", &raw); err != nil {
+		if err := c.get(base+"/branches?per_page=100", &raw); err != nil {
 			fail("branches", err.Error())
 			return
 		}
@@ -328,13 +331,13 @@ func fetchBundle(owner, repo, token string) RepoBundle {
 		var raw []struct {
 			Name string `json:"name"`
 		}
-		if err := client.get(base+"/tags?per_page=5", &raw); err != nil {
+		if err := c.get(base+"/tags?per_page=5", &raw); err != nil {
 			fail("tags", err.Error())
 			return
 		}
-		result := make([]Tag, len(raw))
-		for i, t := range raw {
-			result[i] = Tag{Name: t.Name}
+		result := make([]types.Tag, len(raw))
+		for i, tag := range raw {
+			result[i] = types.Tag{Name: tag.Name}
 		}
 		mu.Lock()
 		bundle.Tags = result
