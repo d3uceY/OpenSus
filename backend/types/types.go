@@ -81,7 +81,7 @@ type ContributorStats struct {
 
 // ActivityEvent holds a single repo activity event.
 type ActivityEvent struct {
-	ID        string    `json:"id"`
+	ID        int64     `json:"id"`
 	Type      string    `json:"activity_type"`
 	Actor     string    `json:"actor"`
 	Ref       string    `json:"ref"`

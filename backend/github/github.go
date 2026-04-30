@@ -281,7 +281,7 @@ func FetchBundle(owner, repo, token string) types.RepoBundle {
 	go func() {
 		defer wg.Done()
 		var raw []struct {
-			ID           string `json:"id"`
+			ID           int64 `json:"id"`
 			ActivityType string `json:"activity_type"`
 			Actor        struct {
 				Login string `json:"login"`

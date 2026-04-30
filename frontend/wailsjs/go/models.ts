@@ -1,7 +1,7 @@
 export namespace types {
 	
 	export class ActivityEvent {
-	    id: string;
+	    id: number;
 	    activity_type: string;
 	    actor: string;
 	    ref: string;

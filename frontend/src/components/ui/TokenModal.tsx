@@ -32,7 +32,7 @@ export function TokenModal({ onClose }: Props) {
         </div>
         <input
           type="password"
-          placeholder="ghp_â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
+          placeholder="ghp_......................................."
           value={val}
           onChange={e => setVal(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && save()}
