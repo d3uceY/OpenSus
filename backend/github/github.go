@@ -60,11 +60,16 @@ func (c *client) get(url string, out interface{}) error {
 }
 
 // getWithRetry handles endpoints that return 202 while GitHub computes stats.
-// It retries up to 3 times with a 2-second delay.
+// GitHub fires a background job on the first request; subsequent calls return
+// 200 once the job is done. We use exponential backoff so that cold repos
+// (which typically finish in 10–15 s) are covered without hammering the API.
+// Backoff schedule: 1s, 2s, 3s, 4s, 5s, 6s, 7s, 8s (8 attempts, ~36 s total).
 func (c *client) getWithRetry(url string, out interface{}) error {
-	for attempt := 0; attempt < 3; attempt++ {
+	const maxAttempts = 8
+	for attempt := 0; attempt < maxAttempts; attempt++ {
 		if attempt > 0 {
-			time.Sleep(2 * time.Second)
+			// Linear-ish backoff: 1s × attempt (1s, 2s, 3s … 7s)
+			time.Sleep(time.Duration(attempt) * time.Second)
 		}
 		req, err := c.newRequest(url)
 		if err != nil {
@@ -85,7 +90,7 @@ func (c *client) getWithRetry(url string, out interface{}) error {
 		}
 		return json.NewDecoder(resp.Body).Decode(out)
 	}
-	return fmt.Errorf("stats endpoint returned 202 after 3 retries: %s", url)
+	return fmt.Errorf("stats endpoint still returning 202 after %d attempts: %s", maxAttempts, url)
 }
 
 // ParseOwnerRepo extracts owner and repo from GitHub URL variants:

@@ -17,11 +17,12 @@ func main() {
 
 	// Create application with options
 	err := wails.Run(&options.App{
-		Title:     "OpenSus",
-		Width:     1280,
-		Height:    900,
-		MinWidth:  960,
-		MinHeight: 680,
+		Title:            "OpenSus",
+		Width:            1280,
+		Height:           900,
+		MinWidth:         960,
+		MinHeight:        680,
+		Frameless:        true,
 		AssetServer: &assetserver.Options{
 			Assets: assets,
 		},
