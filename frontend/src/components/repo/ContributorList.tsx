@@ -1,37 +1,27 @@
-import type { main } from '../../../wailsjs/go/models'
-import { t } from '../../tokens'
+import type { types } from '../../../wailsjs/go/models'
 import { fmt } from '../../helpers/format'
 
 interface Props {
-  contributors: main.Contributor[]
+  contributors: types.Contributor[]
 }
 
 export function ContributorList({ contributors }: Props) {
   if (!contributors || contributors.length === 0) {
-    return <span style={{ color: t.mutedSoft, fontSize: 14 }}>No data</span>
+    return <span className="text-muted-soft text-sm">No data</span>
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column' }}>
-      {contributors.map((c, i) => (
-        <div
-          key={c.login}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 12,
-            padding: '10px 0',
-            borderBottom: i < contributors.length - 1 ? `1px solid ${t.hairline}` : 'none',
-          }}
-        >
+    <div className="flex flex-col divide-y divide-hairline">
+      {contributors.map(c => (
+        <div key={c.login} className="flex items-center gap-3 py-[10px]">
           <img
             src={c.avatar_url}
             alt={c.login}
-            style={{ width: 32, height: 32, borderRadius: '50%', background: t.surfaceStrong, flexShrink: 0 }}
+            className="w-8 h-8 rounded-full bg-surface-strong shrink-0"
             onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
           />
-          <span style={{ flex: 1, fontSize: 15, fontWeight: 500, color: t.ink }}>{c.login}</span>
-          <span style={{ fontSize: 13, color: t.muted }}>{fmt(c.contributions)} commits</span>
+          <span className="flex-1 text-[15px] font-medium text-ink">{c.login}</span>
+          <span className="text-[13px] text-muted">{fmt(c.contributions)} commits</span>
         </div>
       ))}
     </div>
