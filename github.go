@@ -128,13 +128,13 @@ func fetchBundle(owner, repo, token string) RepoBundle {
 	go func() {
 		defer wg.Done()
 		var raw struct {
-			FullName    string    `json:"full_name"`
-			Description string    `json:"description"`
-			Stars       int       `json:"stargazers_count"`
-			Forks       int       `json:"forks_count"`
-			Watchers    int       `json:"watchers_count"`
-			OpenIssues  int       `json:"open_issues_count"`
-			Language    string    `json:"language"`
+			FullName    string `json:"full_name"`
+			Description string `json:"description"`
+			Stars       int    `json:"stargazers_count"`
+			Forks       int    `json:"forks_count"`
+			Watchers    int    `json:"watchers_count"`
+			OpenIssues  int    `json:"open_issues_count"`
+			Language    string `json:"language"`
 			License     *struct {
 				Name string `json:"name"`
 			} `json:"license"`
@@ -278,8 +278,8 @@ func fetchBundle(owner, repo, token string) RepoBundle {
 	go func() {
 		defer wg.Done()
 		var raw []struct {
-			ID           string    `json:"id"`
-			ActivityType string    `json:"activity_type"`
+			ID           string `json:"id"`
+			ActivityType string `json:"activity_type"`
 			Actor        struct {
 				Login string `json:"login"`
 			} `json:"actor"`

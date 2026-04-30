@@ -4,17 +4,17 @@ import "time"
 
 // RepoBundle aggregates all GitHub API data for a repository.
 type RepoBundle struct {
-	Meta           RepoMeta                `json:"meta"`
-	Contributors   []Contributor           `json:"contributors"`
-	Releases       []Release               `json:"releases"`
-	Languages      map[string]int64        `json:"languages"`
-	CommitActivity []WeeklyCommitActivity  `json:"commit_activity"`
-	ContribStats   []ContributorStats      `json:"contrib_stats"`
-	Activity       []ActivityEvent         `json:"activity"`
-	BranchCount    int                     `json:"branch_count"`
-	Tags           []Tag                   `json:"tags"`
-	Errors         map[string]string       `json:"errors"`
-	CachedAt       time.Time               `json:"cached_at"`
+	Meta           RepoMeta               `json:"meta"`
+	Contributors   []Contributor          `json:"contributors"`
+	Releases       []Release              `json:"releases"`
+	Languages      map[string]int64       `json:"languages"`
+	CommitActivity []WeeklyCommitActivity `json:"commit_activity"`
+	ContribStats   []ContributorStats     `json:"contrib_stats"`
+	Activity       []ActivityEvent        `json:"activity"`
+	BranchCount    int                    `json:"branch_count"`
+	Tags           []Tag                  `json:"tags"`
+	Errors         map[string]string      `json:"errors"`
+	CachedAt       time.Time              `json:"cached_at"`
 }
 
 // RepoMeta holds core repository metadata.
