@@ -53,7 +53,7 @@ jobs:
         working-directory: frontend
 
       - name: Build
-        run: wails build -clean -tags webkit2gtk_4.1 -o OpenSus-linux-amd64
+        run: wails build -clean -tags webkit2gtk_4_1 -o OpenSus-linux-amd64
 
       - name: Rename Linux binary
         run: |
