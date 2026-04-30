@@ -1,8 +1,8 @@
 import { createContext, useContext } from 'react'
-import type { main } from '../../wailsjs/go/models'
+import type { types } from '../../wailsjs/go/models'
 
 export interface RepoState {
-  bundle: main.RepoBundle | null
+  bundle: types.RepoBundle | null
   loading: boolean
   error: string | null
   url: string
