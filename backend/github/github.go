@@ -126,7 +126,7 @@ func FetchBundle(owner, repo, token string) types.RepoBundle {
 
 	base := fmt.Sprintf("%s/repos/%s/%s", apiBase, owner, repo)
 
-	// 1. Core metadata
+	// Core metadata
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
@@ -170,7 +170,7 @@ func FetchBundle(owner, repo, token string) types.RepoBundle {
 		mu.Unlock()
 	}()
 
-	// 2. Top contributors
+	// Top contributors
 	wg.Add(1)
 	go func() {
 		defer wg.Done()

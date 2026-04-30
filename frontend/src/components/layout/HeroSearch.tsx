@@ -1,3 +1,5 @@
+﻿import { HugeiconsIcon } from '@hugeicons/react'
+import { Search01Icon, Refresh01Icon } from '@hugeicons/core-free-icons'
 import { t } from '../../tokens'
 import { useRepo } from '../../context/RepoContext'
 
@@ -5,128 +7,62 @@ export function HeroSearch() {
   const { url, setUrl, loading, error, bundle, fetchRepo } = useRepo()
 
   return (
-    <section style={{
-      padding: '64px 32px 48px',
-      maxWidth: 1200,
-      margin: '0 auto',
-      position: 'relative',
-      overflow: 'hidden',
-    }}>
+    <section className="pt-16 px-8 pb-12 max-w-[1200px] mx-auto relative overflow-hidden">
       {/* Atmospheric orbs */}
-      <div style={{
-        position: 'absolute',
-        top: -60,
-        left: '10%',
-        width: 320,
-        height: 320,
-        borderRadius: '50%',
-        background: `radial-gradient(circle, ${t.gradientMint}40 0%, transparent 70%)`,
-        pointerEvents: 'none',
-      }} />
-      <div style={{
-        position: 'absolute',
-        top: 20,
-        right: '5%',
-        width: 240,
-        height: 240,
-        borderRadius: '50%',
-        background: `radial-gradient(circle, ${t.gradientLavender}35 0%, transparent 70%)`,
-        pointerEvents: 'none',
-      }} />
+      <div
+        className="absolute -top-[60px] left-[10%] w-[320px] h-[320px] rounded-full pointer-events-none"
+        style={{ background: `radial-gradient(circle, ${t.gradientMint}40 0%, transparent 70%)` }}
+      />
+      <div
+        className="absolute top-5 right-[5%] w-[240px] h-[240px] rounded-full pointer-events-none"
+        style={{ background: `radial-gradient(circle, ${t.gradientLavender}35 0%, transparent 70%)` }}
+      />
 
-      <h1 style={{
-        fontSize: 48,
-        fontWeight: 300,
-        lineHeight: 1.08,
-        letterSpacing: '-0.96px',
-        color: t.ink,
-        fontFamily: "'EB Garamond', 'Times New Roman', serif",
-        marginBottom: 12,
-      }}>
+      <h1 className="text-5xl font-light leading-[1.08] tracking-[-0.96px] text-ink font-display mb-3">
         Repository Intelligence
       </h1>
-      <p style={{
-        fontSize: 16,
-        fontWeight: 400,
-        lineHeight: 1.5,
-        letterSpacing: '0.16px',
-        color: t.body,
-        marginBottom: 28,
-        maxWidth: 560,
-      }}>
+      <p className="text-base leading-relaxed tracking-[0.16px] text-body mb-7 max-w-[560px]">
         Paste any GitHub repository URL to surface stars, contributors, releases, commit
-        activity, and more — fetched concurrently from the GitHub REST API.
+        activity, and more. fetched concurrently from the GitHub REST API.
       </p>
 
-      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+      <div className="flex gap-[10px] flex-wrap">
         <input
           type="text"
           placeholder="https://github.com/owner/repo"
           value={url}
           onChange={e => setUrl(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && fetchRepo(false)}
-          style={{
-            flex: '1 1 320px',
-            padding: '10px 16px',
-            borderRadius: 8,
-            border: `1px solid ${t.hairlineStrong}`,
-            fontSize: 15,
-            color: t.ink,
-            background: t.surfaceCard,
-            outline: 'none',
-            fontFamily: "'Inter', sans-serif",
-          }}
+          className="flex-[1_1_320px] px-4 py-[10px] rounded-lg border border-hairline-strong text-[15px] text-ink bg-surface-card outline-none font-sans"
         />
         <button
           onClick={() => fetchRepo(false)}
           disabled={loading || !url.trim()}
-          style={{
-            padding: '10px 22px',
-            borderRadius: 9999,
-            background: loading ? t.muted : t.primary,
-            border: 'none',
-            fontSize: 15,
-            fontWeight: 500,
-            color: t.onPrimary,
-            cursor: loading ? 'default' : 'pointer',
-            transition: 'background 0.15s',
-          }}
+          className={`flex items-center gap-2 px-[22px] py-[10px] rounded-full border-none text-[15px] font-medium text-on-primary transition-colors duration-150 ${
+            loading ? 'bg-muted cursor-default' : 'bg-primary cursor-pointer'
+          }`}
         >
-          {loading ? 'Fetching…' : 'Fetch'}
+          <HugeiconsIcon icon={Search01Icon} size={15} className="text-on-primary" />
+          {loading ? 'Fetchingâ€¦' : 'Fetch'}
         </button>
         {bundle && (
           <button
             onClick={() => fetchRepo(true)}
             disabled={loading}
-            style={{
-              padding: '10px 18px',
-              borderRadius: 9999,
-              background: 'transparent',
-              border: `1px solid ${t.hairlineStrong}`,
-              fontSize: 15,
-              fontWeight: 500,
-              color: t.body,
-              cursor: loading ? 'default' : 'pointer',
-            }}
+            className="flex items-center gap-2 px-[18px] py-[10px] rounded-full bg-transparent border border-hairline-strong text-[15px] font-medium text-body cursor-pointer"
           >
+            <HugeiconsIcon icon={Refresh01Icon} size={15} className="text-muted" />
             Refresh
           </button>
         )}
       </div>
 
       {error && (
-        <div style={{
-          marginTop: 16,
-          padding: '10px 16px',
-          borderRadius: 8,
-          background: '#fef2f2',
-          border: '1px solid #fecaca',
-          fontSize: 14,
-          color: t.semanticError,
-        }}>
+        <div className="mt-4 px-4 py-[10px] rounded-lg bg-red-50 border border-red-200 text-sm text-semantic-error">
           {error}
         </div>
       )}
     </section>
   )
 }
+

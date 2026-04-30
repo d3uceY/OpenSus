@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { t } from '../../tokens'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { Key01Icon } from '@hugeicons/core-free-icons'
 import { TokenModal } from '../ui/TokenModal'
 
 export function TopNav() {
@@ -7,41 +8,15 @@ export function TopNav() {
 
   return (
     <>
-      <nav style={{
-        height: 64,
-        background: t.canvasSoft,
-        borderBottom: `1px solid ${t.hairline}`,
-        display: 'flex',
-        alignItems: 'center',
-        padding: '0 32px',
-        gap: 16,
-        position: 'sticky',
-        top: 0,
-        zIndex: 50,
-      }}>
-        <span style={{
-          fontSize: 18,
-          fontWeight: 300,
-          letterSpacing: '-0.5px',
-          color: t.ink,
-          fontFamily: "'EB Garamond', 'Times New Roman', serif",
-          flex: 1,
-        }}>
+      <nav className="h-16 bg-canvas-soft border-b border-hairline flex items-center px-8 gap-4 sticky top-0 z-50">
+        <span className="text-[18px] font-light tracking-[-0.5px] text-ink font-display flex-1">
           OpenSus
         </span>
         <button
           onClick={() => setShowToken(true)}
-          style={{
-            padding: '7px 16px',
-            borderRadius: 9999,
-            border: `1px solid ${t.hairlineStrong}`,
-            background: 'transparent',
-            fontSize: 14,
-            fontWeight: 500,
-            color: t.body,
-            cursor: 'pointer',
-          }}
+          className="flex items-center gap-[7px] px-4 py-[7px] rounded-full border border-hairline-strong bg-transparent text-sm font-medium text-body cursor-pointer"
         >
+          <HugeiconsIcon icon={Key01Icon} size={14} className="text-muted" />
           GitHub Token
         </button>
       </nav>

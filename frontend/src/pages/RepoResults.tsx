@@ -24,18 +24,13 @@ export function RepoResults() {
   const showInsights = mostActiveWeek || topContribPct !== null || daysSinceLastPush !== null
 
   return (
-    <main style={{ maxWidth: 1200, margin: '0 auto', padding: '0 32px 96px' }}>
+    <main className="max-w-[1200px] mx-auto px-8 pb-24">
       <RepoHeader meta={bundle.meta} cachedAt={bundle.cached_at} />
 
       {bundle.errors && <ErrorBanner errors={bundle.errors} />}
 
       {/* Core stats */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))',
-        gap: 12,
-        marginBottom: 24,
-      }}>
+      <div className="grid grid-cols-[repeat(auto-fill,_minmax(160px,_1fr))] gap-3 mb-6">
         <StatCard label="Stars" value={fmt(bundle.meta?.stars ?? 0)} />
         <StatCard label="Forks" value={fmt(bundle.meta?.forks ?? 0)} />
         <StatCard label="Watchers" value={fmt(bundle.meta?.watchers ?? 0)} />
@@ -46,12 +41,7 @@ export function RepoResults() {
 
       {/* Derived insights */}
       {showInsights && (
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-          gap: 12,
-          marginBottom: 24,
-        }}>
+        <div className="grid grid-cols-[repeat(auto-fill,_minmax(200px,_1fr))] gap-3 mb-6">
           {mostActiveWeek && (
             <StatCard
               label="Most active week"
@@ -84,12 +74,7 @@ export function RepoResults() {
       )}
 
       {/* 3-up grid */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-        gap: 16,
-        marginBottom: 16,
-      }}>
+      <div className="grid grid-cols-[repeat(auto-fill,_minmax(300px,_1fr))] gap-4 mb-4">
         <Card title="52-week Commit Activity" accent={t.gradientMint}>
           <CommitSparkline weeks={bundle.commit_activity ?? []} />
         </Card>
@@ -102,12 +87,7 @@ export function RepoResults() {
       </div>
 
       {/* 2-up grid */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
-        gap: 16,
-        marginBottom: 16,
-      }}>
+      <div className="grid grid-cols-[repeat(auto-fill,_minmax(320px,_1fr))] gap-4 mb-4">
         <Card title="Releases" accent={t.gradientSky}>
           <ReleaseList releases={bundle.releases ?? []} />
         </Card>
