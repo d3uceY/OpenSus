@@ -15,9 +15,6 @@ export function TopNav() {
       <nav className="h-16 bg-canvas-soft border-b border-hairline flex items-center px-8 gap-4 sticky top-0 z-50">
         <div className="flex items-center gap-2 flex-1">
           <img src={logo} alt="OpenSus" className="h-8 w-auto object-contain object-left" />
-          {currentVersion && (
-            <span className="text-xs text-muted font-mono">v{currentVersion}</span>
-          )}
         </div>
         <button
           onClick={() => setShowToken(true)}

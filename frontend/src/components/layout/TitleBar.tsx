@@ -1,8 +1,11 @@
-import { WindowMinimise, WindowToggleMaximise, Quit } from '../../../wailsjs/runtime/runtime'
+import { WindowMinimise, WindowToggleMaximise, Quit, BrowserOpenURL } from '../../../wailsjs/runtime/runtime'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { Minimize01Icon, SquareIcon, Cancel01Icon } from '@hugeicons/core-free-icons'
+import { useUpdateCheck } from '../../hooks/useUpdateCheck'
 
 export function TitleBar() {
+  const { currentVersion} = useUpdateCheck()
+
   return (
     <div
       // @ts-ignore — wails drag region data attribute
@@ -15,8 +18,18 @@ export function TitleBar() {
         // @ts-ignore
         style={{ '--wails-draggable': 'drag' } as React.CSSProperties}
       >
-        <span className="text-[13px] font-medium tracking-[-0.2px] text-muted pointer-events-none">
-          OpenSus
+        <span className="text-[13px] flex items-center font-medium tracking-[-0.2px] text-muted pointer-events-none">
+          <span>OpenSus</span>
+          {currentVersion && (
+            <button
+              onClick={() => BrowserOpenURL('https://github.com/d3uceY/OpenSus')}
+              // @ts-ignore
+              style={{ '--wails-draggable': 'no-drag' } as React.CSSProperties}
+              className="ml-1.5 px-1.5 py-0.5 rounded text-[10px] font-mono bg-surface-strong text-muted border border-hairline cursor-pointer hover:border-hairline-strong hover:text-ink transition-colors"
+            >
+              v{currentVersion}
+            </button>
+          )}
         </span>
       </div>
 

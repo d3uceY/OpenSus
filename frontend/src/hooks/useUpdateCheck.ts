@@ -36,6 +36,7 @@ export function useUpdateCheck(): UpdateState & { dismiss: () => void } {
     async function check() {
       try {
         const current = await Version()
+        if (!cancelled) setState(prev => ({ ...prev, currentVersion: current }))
         const res = await fetch('https://api.github.com/repos/d3uceY/OpenSus/releases/latest', {
           headers: { Accept: 'application/vnd.github+json' },
         })
