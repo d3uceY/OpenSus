@@ -119,6 +119,11 @@ func (a *App) SetToken(token string) {
 	a.token = token
 }
 
+// Version returns the current application version string.
+func (a *App) Version() string {
+	return AppVersion
+}
+
 // FetchRepo fetches and returns intelligence for the given GitHub repository URL.
 // Results are cached in memory for 5 minutes.
 func (a *App) FetchRepo(repoURL string) (types.RepoBundle, error) {

@@ -29,3 +29,7 @@ export function LoadHistory() {
 export function SetToken(arg1) {
   return window['go']['main']['App']['SetToken'](arg1);
 }
+
+export function Version() {
+  return window['go']['main']['App']['Version']();
+}

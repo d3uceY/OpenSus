@@ -15,3 +15,5 @@ export function ForceRefresh(arg1:string):Promise<types.RepoBundle>;
 export function LoadHistory():Promise<Array<string>>;
 
 export function SetToken(arg1:string):Promise<void>;
+
+export function Version():Promise<string>;
