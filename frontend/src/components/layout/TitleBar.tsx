@@ -18,8 +18,8 @@ export function TitleBar() {
         // @ts-ignore
         style={{ '--wails-draggable': 'drag' } as React.CSSProperties}
       >
-        <span className="text-[13px] flex items-center font-medium tracking-[-0.2px] text-muted pointer-events-none">
-          <span>OpenSus</span>
+        <span className="text-[13px] flex items-center font-medium tracking-[-0.2px] text-muted">
+          <span className="pointer-events-none">OpenSus</span>
           {currentVersion && (
             <button
               onClick={() => BrowserOpenURL('https://github.com/d3uceY/OpenSus')}
