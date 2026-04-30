@@ -29,7 +29,7 @@ export function HeroSearch() {
       </h1>
       <p className="text-base leading-relaxed tracking-[0.16px] text-body mb-7 max-w-[560px]">
         Paste any GitHub repository URL to surface stars, contributors, releases, commit
-        activity, and more — fetched concurrently from the GitHub REST API.
+        activity, and more.
       </p>
 
       <div className="flex gap-[10px] flex-wrap items-start">
