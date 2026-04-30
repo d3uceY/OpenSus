@@ -1,5 +1,4 @@
-import { useState } from 'react'
-import { t } from '../../tokens'
+﻿import { useState } from 'react'
 import { useGitHubToken } from '../../hooks/useGitHubToken'
 
 interface Props {
@@ -17,88 +16,45 @@ export function TokenModal({ onClose }: Props) {
 
   return (
     <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        background: 'rgba(12,10,9,0.4)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 100,
-      }}
+      className="fixed inset-0 bg-[rgba(12,10,9,0.4)] flex items-center justify-center z-[100]"
       onClick={onClose}
     >
       <div
-        style={{
-          background: t.surfaceCard,
-          borderRadius: 16,
-          padding: 32,
-          width: 420,
-          boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
-          border: `1px solid ${t.hairline}`,
-        }}
+        className="bg-surface-card rounded-2xl p-8 w-[420px] shadow-[0_8px_32px_rgba(0,0,0,0.12)] border border-hairline"
         onClick={e => e.stopPropagation()}
       >
-        <div style={{ fontSize: 20, fontWeight: 500, color: t.ink, marginBottom: 8 }}>
+        <div className="text-xl font-medium text-ink mb-2">
           GitHub Token
         </div>
-        <div style={{ fontSize: 14, color: t.body, marginBottom: 20, lineHeight: 1.5 }}>
+        <div className="text-sm text-body mb-5 leading-relaxed">
           A Personal Access Token raises the API limit from 60 to 5,000 requests/hour.
           Only <code>public_repo</code> scope is needed.
         </div>
         <input
           type="password"
-          placeholder="ghp_••••••••••••••••••"
+          placeholder="ghp_â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
           value={val}
           onChange={e => setVal(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && save()}
-          style={{
-            width: '100%',
-            padding: '10px 14px',
-            borderRadius: 8,
-            border: `1px solid ${t.hairlineStrong}`,
-            fontSize: 15,
-            color: t.ink,
-            background: t.surfaceCard,
-            outline: 'none',
-            fontFamily: 'monospace',
-            marginBottom: 16,
-          }}
+          className="w-full px-[14px] py-[10px] rounded-lg border border-hairline-strong text-[15px] text-ink bg-surface-card outline-none font-mono mb-4"
           autoFocus
         />
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+        <div className="flex justify-end gap-[10px]">
           <button
             onClick={onClose}
-            style={{
-              padding: '8px 18px',
-              borderRadius: 9999,
-              border: `1px solid ${t.hairlineStrong}`,
-              background: 'transparent',
-              fontSize: 14,
-              fontWeight: 500,
-              color: t.ink,
-              cursor: 'pointer',
-            }}
+            className="px-[18px] py-2 rounded-full border border-hairline-strong bg-transparent text-sm font-medium text-ink cursor-pointer"
           >
             Cancel
           </button>
           <button
             onClick={save}
-            style={{
-              padding: '8px 18px',
-              borderRadius: 9999,
-              background: t.primary,
-              border: 'none',
-              fontSize: 14,
-              fontWeight: 500,
-              color: t.onPrimary,
-              cursor: 'pointer',
-            }}
+            className="px-[18px] py-2 rounded-full bg-primary border-none text-sm font-medium text-on-primary cursor-pointer"
           >
-            {saved ? 'Saved ✓' : 'Save token'}
+            {saved ? 'Saved âœ“' : 'Save token'}
           </button>
         </div>
       </div>
     </div>
   )
 }
+
