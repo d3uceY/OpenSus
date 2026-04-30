@@ -1,9 +1,9 @@
 import { useState, useCallback } from 'react'
 import { FetchRepo, ForceRefresh } from '../../wailsjs/go/main/App'
-import type { main } from '../../wailsjs/go/models'
+import type { types } from '../../wailsjs/go/models'
 
 export interface UseFetchRepoReturn {
-  bundle: main.RepoBundle | null
+  bundle: types.RepoBundle | null
   loading: boolean
   error: string | null
   url: string
@@ -12,7 +12,7 @@ export interface UseFetchRepoReturn {
 }
 
 export function useFetchRepo(): UseFetchRepoReturn {
-  const [bundle, setBundle] = useState<main.RepoBundle | null>(null)
+  const [bundle, setBundle] = useState<types.RepoBundle | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [url, setUrl] = useState('')
