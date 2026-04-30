@@ -1,0 +1,347 @@
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+	"io"
+	"net/http"
+	"strings"
+	"sync"
+	"time"
+)
+
+const githubAPIBase = "https://api.github.com"
+
+type githubClient struct {
+	httpClient *http.Client
+	token      string
+}
+
+func newGitHubClient(token string) *githubClient {
+	return &githubClient{
+		httpClient: &http.Client{Timeout: 20 * time.Second},
+		token:      token,
+	}
+}
+
+func (g *githubClient) newRequest(url string) (*http.Request, error) {
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Accept", "application/vnd.github+json")
+	req.Header.Set("X-GitHub-Api-Version", "2022-11-28")
+	if g.token != "" {
+		req.Header.Set("Authorization", "Bearer "+g.token)
+	}
+	return req, nil
+}
+
+// get performs a GET request and decodes the JSON response into out.
+func (g *githubClient) get(url string, out interface{}) error {
+	req, err := g.newRequest(url)
+	if err != nil {
+		return err
+	}
+	resp, err := g.httpClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("HTTP %d: %s", resp.StatusCode, string(body))
+	}
+	return json.NewDecoder(resp.Body).Decode(out)
+}
+
+// getWithRetry handles endpoints that return 202 while GitHub computes stats.
+// It retries up to 3 times with a 2-second delay between attempts.
+func (g *githubClient) getWithRetry(url string, out interface{}) error {
+	for attempt := 0; attempt < 3; attempt++ {
+		if attempt > 0 {
+			time.Sleep(2 * time.Second)
+		}
+		req, err := g.newRequest(url)
+		if err != nil {
+			return err
+		}
+		resp, err := g.httpClient.Do(req)
+		if err != nil {
+			return err
+		}
+		if resp.StatusCode == http.StatusAccepted {
+			resp.Body.Close()
+			continue
+		}
+		defer resp.Body.Close()
+		if resp.StatusCode != http.StatusOK {
+			body, _ := io.ReadAll(resp.Body)
+			return fmt.Errorf("HTTP %d: %s", resp.StatusCode, string(body))
+		}
+		return json.NewDecoder(resp.Body).Decode(out)
+	}
+	return fmt.Errorf("stats endpoint returned 202 after 3 retries: %s", url)
+}
+
+// parseOwnerRepo extracts owner and repo name from various GitHub URL formats:
+//   - https://github.com/owner/repo
+//   - github.com/owner/repo
+//   - owner/repo
+func parseOwnerRepo(repoURL string) (owner, repo string, err error) {
+	s := strings.TrimSpace(repoURL)
+	s = strings.TrimPrefix(s, "https://")
+	s = strings.TrimPrefix(s, "http://")
+	s = strings.TrimPrefix(s, "github.com/")
+	s = strings.TrimSuffix(s, "/")
+	s = strings.TrimSuffix(s, ".git")
+
+	parts := strings.SplitN(s, "/", 2)
+	if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
+		return "", "", fmt.Errorf("invalid GitHub repository URL: %q", repoURL)
+	}
+	return parts[0], parts[1], nil
+}
+
+// fetchBundle calls all GitHub REST endpoints concurrently and returns a RepoBundle.
+// Individual endpoint errors are recorded in bundle.Errors; the call does not abort.
+func fetchBundle(owner, repo, token string) RepoBundle {
+	client := newGitHubClient(token)
+	bundle := RepoBundle{
+		Errors: make(map[string]string),
+	}
+
+	var mu sync.Mutex
+	var wg sync.WaitGroup
+
+	fail := func(key, msg string) {
+		mu.Lock()
+		bundle.Errors[key] = msg
+		mu.Unlock()
+	}
+
+	base := fmt.Sprintf("%s/repos/%s/%s", githubAPIBase, owner, repo)
+
+	// 1. Core metadata
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		var raw struct {
+			FullName    string    `json:"full_name"`
+			Description string    `json:"description"`
+			Stars       int       `json:"stargazers_count"`
+			Forks       int       `json:"forks_count"`
+			Watchers    int       `json:"watchers_count"`
+			OpenIssues  int       `json:"open_issues_count"`
+			Language    string    `json:"language"`
+			License     *struct {
+				Name string `json:"name"`
+			} `json:"license"`
+			CreatedAt time.Time `json:"created_at"`
+			PushedAt  time.Time `json:"pushed_at"`
+			HTMLURL   string    `json:"html_url"`
+		}
+		if err := client.get(base, &raw); err != nil {
+			fail("meta", err.Error())
+			return
+		}
+		license := ""
+		if raw.License != nil {
+			license = raw.License.Name
+		}
+		mu.Lock()
+		bundle.Meta = RepoMeta{
+			FullName:    raw.FullName,
+			Description: raw.Description,
+			Stars:       raw.Stars,
+			Forks:       raw.Forks,
+			Watchers:    raw.Watchers,
+			OpenIssues:  raw.OpenIssues,
+			Language:    raw.Language,
+			License:     license,
+			CreatedAt:   raw.CreatedAt,
+			PushedAt:    raw.PushedAt,
+			HTMLURL:     raw.HTMLURL,
+		}
+		mu.Unlock()
+	}()
+
+	// 2. Top contributors
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		var raw []struct {
+			Login         string `json:"login"`
+			AvatarURL     string `json:"avatar_url"`
+			Contributions int    `json:"contributions"`
+			HTMLURL       string `json:"html_url"`
+		}
+		if err := client.get(base+"/contributors?per_page=10", &raw); err != nil {
+			fail("contributors", err.Error())
+			return
+		}
+		result := make([]Contributor, len(raw))
+		for i, c := range raw {
+			result[i] = Contributor{
+				Login:         c.Login,
+				AvatarURL:     c.AvatarURL,
+				Contributions: c.Contributions,
+				HTMLURL:       c.HTMLURL,
+			}
+		}
+		mu.Lock()
+		bundle.Contributors = result
+		mu.Unlock()
+	}()
+
+	// 3. Releases
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		var raw []struct {
+			TagName     string    `json:"tag_name"`
+			PublishedAt time.Time `json:"published_at"`
+			Assets      []struct {
+				Name          string `json:"name"`
+				DownloadCount int    `json:"download_count"`
+			} `json:"assets"`
+		}
+		if err := client.get(base+"/releases?per_page=10", &raw); err != nil {
+			fail("releases", err.Error())
+			return
+		}
+		result := make([]Release, len(raw))
+		for i, r := range raw {
+			assets := make([]ReleaseAsset, len(r.Assets))
+			total := 0
+			for j, a := range r.Assets {
+				assets[j] = ReleaseAsset{Name: a.Name, DownloadCount: a.DownloadCount}
+				total += a.DownloadCount
+			}
+			result[i] = Release{
+				TagName:        r.TagName,
+				PublishedAt:    r.PublishedAt,
+				Assets:         assets,
+				TotalDownloads: total,
+			}
+		}
+		mu.Lock()
+		bundle.Releases = result
+		mu.Unlock()
+	}()
+
+	// 4. Languages
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		var raw map[string]int64
+		if err := client.get(base+"/languages", &raw); err != nil {
+			fail("languages", err.Error())
+			return
+		}
+		mu.Lock()
+		bundle.Languages = raw
+		mu.Unlock()
+	}()
+
+	// 5. 52-week commit activity (may return 202 while GitHub computes)
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		var raw []WeeklyCommitActivity
+		if err := client.getWithRetry(base+"/stats/commit_activity", &raw); err != nil {
+			fail("commit_activity", err.Error())
+			return
+		}
+		mu.Lock()
+		bundle.CommitActivity = raw
+		mu.Unlock()
+	}()
+
+	// 6. Per-contributor stats (may return 202 while GitHub computes)
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		var raw []ContributorStats
+		if err := client.getWithRetry(base+"/stats/contributors", &raw); err != nil {
+			fail("contrib_stats", err.Error())
+			return
+		}
+		mu.Lock()
+		bundle.ContribStats = raw
+		mu.Unlock()
+	}()
+
+	// 7. Recent activity feed
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		var raw []struct {
+			ID           string    `json:"id"`
+			ActivityType string    `json:"activity_type"`
+			Actor        struct {
+				Login string `json:"login"`
+			} `json:"actor"`
+			Ref       string    `json:"ref"`
+			Timestamp time.Time `json:"timestamp"`
+		}
+		if err := client.get(base+"/activity?per_page=15", &raw); err != nil {
+			fail("activity", err.Error())
+			return
+		}
+		result := make([]ActivityEvent, len(raw))
+		for i, a := range raw {
+			result[i] = ActivityEvent{
+				ID:        a.ID,
+				Type:      a.ActivityType,
+				Actor:     a.Actor.Login,
+				Ref:       a.Ref,
+				Timestamp: a.Timestamp,
+			}
+		}
+		mu.Lock()
+		bundle.Activity = result
+		mu.Unlock()
+	}()
+
+	// 8. Branch count
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		var raw []struct {
+			Name string `json:"name"`
+		}
+		if err := client.get(base+"/branches?per_page=100", &raw); err != nil {
+			fail("branches", err.Error())
+			return
+		}
+		mu.Lock()
+		bundle.BranchCount = len(raw)
+		mu.Unlock()
+	}()
+
+	// 9. Tags
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		var raw []struct {
+			Name string `json:"name"`
+		}
+		if err := client.get(base+"/tags?per_page=5", &raw); err != nil {
+			fail("tags", err.Error())
+			return
+		}
+		result := make([]Tag, len(raw))
+		for i, t := range raw {
+			result[i] = Tag{Name: t.Name}
+		}
+		mu.Lock()
+		bundle.Tags = result
+		mu.Unlock()
+	}()
+
+	wg.Wait()
+	bundle.CachedAt = time.Now()
+	return bundle
+}
