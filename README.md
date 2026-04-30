@@ -13,9 +13,10 @@ Always downloads the **latest release**.
 
 | Platform | Download |
 |----------|----------|
-| **Windows** | [![Windows](https://img.shields.io/badge/Windows-amd64-0078D4?style=for-the-badge&logo=windows)](https://github.com/d3uceY/OpenSus/releases/latest/download/OpenSus-Setup.exe) |
-| **macOS** | [![macOS](https://img.shields.io/badge/macOS-universal-000000?style=for-the-badge&logo=apple)](https://github.com/d3uceY/OpenSus/releases/latest/download/OpenSus.dmg) |
-| **Linux** | [![Linux](https://img.shields.io/badge/Linux-amd64-FCC624?style=for-the-badge&logo=linux&logoColor=black)](https://github.com/d3uceY/OpenSus/releases/latest/download/OpenSus.AppImage) |
+| **Windows** (amd64) | [![Windows](https://img.shields.io/badge/Windows-amd64-0078D4?style=for-the-badge&logo=windows)](https://github.com/d3uceY/OpenSus/releases/latest/download/OpenSus-windows-amd64-installer.exe) |
+| **macOS** (Apple Silicon) | [![macOS ARM64](https://img.shields.io/badge/macOS-arm64-000000?style=for-the-badge&logo=apple)](https://github.com/d3uceY/OpenSus/releases/latest/download/OpenSus-macos-arm64.dmg) |
+| **macOS** (Intel) | [![macOS AMD64](https://img.shields.io/badge/macOS-amd64-000000?style=for-the-badge&logo=apple)](https://github.com/d3uceY/OpenSus/releases/latest/download/OpenSus-macos-amd64.dmg) |
+| **Linux** (amd64) | [![Linux](https://img.shields.io/badge/Linux-amd64-FCC624?style=for-the-badge&logo=linux&logoColor=black)](https://github.com/d3uceY/OpenSus/releases/latest/download/OpenSus-linux-amd64) |
 
 > All assets for every release are also available on the [Releases page](https://github.com/d3uceY/OpenSus/releases).
 
