@@ -2,7 +2,7 @@
   <img src="build/appicon.png" alt="OpenSus" width="96" height="96" />
   <h1>OpenSus</h1>
   <p>A desktop app for analysing GitHub repository activity and insights.</p>
-  <p>Paste any public GitHub URL and instantly see contributors, releases, commit history, languages, branches, tags, and recent activity — all in one place.</p>
+  <p>Paste any public GitHub URL and instantly see contributors, releases, commit history, languages, branches, tags, and recent activity, all in one place.</p>
 </div>
 
 ---
