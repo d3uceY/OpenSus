@@ -15,27 +15,3 @@ export function ForceRefresh(arg1:string):Promise<types.RepoBundle>;
 export function LoadHistory():Promise<Array<string>>;
 
 export function SetToken(arg1:string):Promise<void>;
-
-export function LoadHistory():Promise<string[]>;
-
-export function AddHistory(arg1:string):Promise<void>;
-
-export function DeleteHistory(arg1:string):Promise<void>;
-
-export function ClearHistory():Promise<void>;
-
-export function LoadHistory():Promise<string[]>;
-
-export function AddHistory(arg1:string):Promise<void>;
-
-export function DeleteHistory(arg1:string):Promise<void>;
-
-export function ClearHistory():Promise<void>;
-
-export function LoadHistory():Promise<string[]>;
-
-export function AddHistory(arg1:string):Promise<void>;
-
-export function DeleteHistory(arg1:string):Promise<void>;
-
-export function ClearHistory():Promise<void>;

@@ -29,35 +29,3 @@ export function LoadHistory() {
 export function SetToken(arg1) {
   return window['go']['main']['App']['SetToken'](arg1);
 }
-
-export function LoadHistory() {
-  return window['go']['main']['App']['LoadHistory']();
-}
-
-export function AddHistory(arg1) {
-  return window['go']['main']['App']['AddHistory'](arg1);
-}
-
-export function DeleteHistory(arg1) {
-  return window['go']['main']['App']['DeleteHistory'](arg1);
-}
-
-export function ClearHistory() {
-  return window['go']['main']['App']['ClearHistory']();
-}
-
-export function LoadHistory() {
-  return window['go']['main']['App']['LoadHistory']();
-}
-
-export function AddHistory(arg1) {
-  return window['go']['main']['App']['AddHistory'](arg1);
-}
-
-export function DeleteHistory(arg1) {
-  return window['go']['main']['App']['DeleteHistory'](arg1);
-}
-
-export function ClearHistory() {
-  return window['go']['main']['App']['ClearHistory']();
-}
