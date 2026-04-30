@@ -1,31 +1,6 @@
 import type { types } from '../../wailsjs/go/models'
 
 /**
- * Returns the week with the highest commit total, or null if no data.
- */
-export function getMostActiveWeek(
-  weeks: types.WeeklyCommitActivity[] | null | undefined,
-): types.WeeklyCommitActivity | null {
-  if (!weeks || weeks.length === 0) return null
-  return weeks.reduce((best, w) => (w.total > best.total ? w : best))
-}
-
-/**
- * Returns the top contributor's share of all commits as a percentage (0–100),
- * or null if the data is unavailable.
- */
-export function getTopContribPercent(
-  contribStats: types.ContributorStats[] | null | undefined,
-  commitActivity: types.WeeklyCommitActivity[] | null | undefined,
-): number | null {
-  if (!contribStats?.length || !commitActivity?.length) return null
-  const totalCommits = commitActivity.reduce((s, w) => s + w.total, 0)
-  if (!totalCommits) return null
-  const topTotal = contribStats[0]?.total ?? 0
-  return Math.round((topTotal / totalCommits) * 100)
-}
-
-/**
  * Returns the number of calendar days since the last push, or null if unavailable.
  */
 export function getDaysSinceLastPush(pushedAt: string | null | undefined): number | null {
