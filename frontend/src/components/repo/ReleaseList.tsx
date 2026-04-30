@@ -1,44 +1,25 @@
-import type { main } from '../../../wailsjs/go/models'
-import { t } from '../../tokens'
+import type { types } from '../../../wailsjs/go/models'
 import { timeAgo, fmt } from '../../helpers/format'
 
 interface Props {
-  releases: main.Release[]
+  releases: types.Release[]
 }
 
 export function ReleaseList({ releases }: Props) {
   if (!releases || releases.length === 0) {
-    return <span style={{ color: t.mutedSoft, fontSize: 14 }}>No releases</span>
+    return <span className="text-muted-soft text-sm">No releases</span>
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column' }}>
-      {releases.map((r, i) => (
-        <div
-          key={r.tag_name}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 12,
-            padding: '10px 0',
-            borderBottom: i < releases.length - 1 ? `1px solid ${t.hairline}` : 'none',
-          }}
-        >
-          <div style={{
-            background: t.surfaceStrong,
-            borderRadius: 9999,
-            padding: '3px 10px',
-            fontSize: 12,
-            fontWeight: 600,
-            letterSpacing: '0.5px',
-            color: t.bodyStrong,
-            flexShrink: 0,
-          }}>
+    <div className="flex flex-col divide-y divide-hairline">
+      {releases.map(r => (
+        <div key={r.tag_name} className="flex items-center gap-3 py-[10px]">
+          <div className="bg-surface-strong rounded-full px-[10px] py-[3px] text-xs font-semibold tracking-[0.5px] text-body-strong shrink-0">
             {r.tag_name}
           </div>
-          <span style={{ flex: 1, fontSize: 13, color: t.muted }}>{timeAgo(r.published_at)}</span>
+          <span className="flex-1 text-[13px] text-muted">{timeAgo(r.published_at)}</span>
           {r.total_downloads > 0 && (
-            <span style={{ fontSize: 13, color: t.body }}>↓ {fmt(r.total_downloads)}</span>
+            <span className="text-[13px] text-body">↓ {fmt(r.total_downloads)}</span>
           )}
         </div>
       ))}
