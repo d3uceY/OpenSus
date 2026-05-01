@@ -129,7 +129,7 @@ export function RepoResults() {
       </div>
 
       {/* 2-up grid: Releases · Activity */}
-      <div className="grid grid-cols-[repeat(auto-fill,_minmax(320px,_1fr))] gap-4 mb-4">
+      <div className="grid grid-cols-[repeat(auto-fill,_minmax(500px,_1fr))] gap-4 mb-4">
         <Card title="Releases" accent={t.gradientSky}>
           <div className="max-h-[340px] overflow-y-auto pr-1">
             <ReleaseList releases={bundle.releases ?? []} />
