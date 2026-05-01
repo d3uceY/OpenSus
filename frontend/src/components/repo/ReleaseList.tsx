@@ -10,6 +10,65 @@ interface Props {
   releases: types.Release[]
 }
 
+const SLICE_COLORS = [
+  '#7C9EF8', '#F4A96A', '#6DD9A8', '#E87B9A', '#A78BF5',
+  '#F9D36A', '#60C9E8', '#F47B6A', '#82D96E', '#C87BE8',
+  '#F9A06A', '#6AB8F9', '#E8C46A', '#7BE8A0', '#E86AC8',
+  '#A0E86A', '#6A9EF9', '#F9E06A', '#E86A7C', '#6AE8D9',
+]
+
+function DownloadPieChart({ assets }: { assets: types.ReleaseAsset[] }) {
+  const withDownloads = assets.filter(a => a.download_count > 0)
+  if (withDownloads.length === 0) return null
+
+  const total = withDownloads.reduce((s, a) => s + a.download_count, 0)
+  const size = 80
+  const cx = size / 2
+  const cy = size / 2
+  const r = size / 2 - 2
+
+  // Build pie slices
+  const slices: { d: string; color: string }[] = []
+  let startAngle = -Math.PI / 2
+
+  for (let i = 0; i < withDownloads.length; i++) {
+    const asset = withDownloads[i]
+    // Find original index for color
+    const origIdx = assets.indexOf(asset)
+    const sweep = (asset.download_count / total) * 2 * Math.PI
+    const endAngle = startAngle + sweep
+
+    const x1 = cx + r * Math.cos(startAngle)
+    const y1 = cy + r * Math.sin(startAngle)
+    const x2 = cx + r * Math.cos(endAngle)
+    const y2 = cy + r * Math.sin(endAngle)
+    const largeArc = sweep > Math.PI ? 1 : 0
+
+    // Single asset gets a full circle
+    if (withDownloads.length === 1) {
+      slices.push({
+        d: `M ${cx} ${cy} m -${r} 0 a ${r} ${r} 0 1 1 ${r * 2} 0 a ${r} ${r} 0 1 1 -${r * 2} 0`,
+        color: SLICE_COLORS[origIdx % SLICE_COLORS.length],
+      })
+    } else {
+      slices.push({
+        d: `M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2} Z`,
+        color: SLICE_COLORS[origIdx % SLICE_COLORS.length],
+      })
+    }
+
+    startAngle = endAngle
+  }
+
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+      {slices.map((s, i) => (
+        <path key={i} d={s.d} fill={s.color} />
+      ))}
+    </svg>
+  )
+}
+
 function AssetsTooltip({ assets, anchorEl }: { assets: types.ReleaseAsset[]; anchorEl: HTMLElement | null }) {
   const [pos, setPos] = useState<{ top: number; right: number } | null>(null)
 
@@ -24,15 +83,20 @@ function AssetsTooltip({ assets, anchorEl }: { assets: types.ReleaseAsset[]; anc
 
   if (!assets || assets.length === 0 || !pos) return null
 
+  const hasAnyDownloads = assets.some(a => a.download_count > 0)
+
   return createPortal(
     <div
       style={{ position: 'absolute', top: pos.top, right: pos.right }}
       className="z-[9999] bg-surface-card border border-hairline rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.1)] p-3 min-w-[240px] flex flex-col gap-1.5 pointer-events-auto"
     >
       <div className="text-[11px] font-semibold tracking-[0.8px] uppercase text-muted mb-1">Assets</div>
-      {assets.map(a => (
+      {assets.map((a, i) => (
         <div key={a.name} className="flex items-center gap-2 group">
-          <HugeiconsIcon icon={Package01Icon} size={13} className="text-muted-soft shrink-0" />
+          <span
+            className="w-2 h-2 rounded-sm shrink-0"
+            style={{ background: SLICE_COLORS[i % SLICE_COLORS.length] }}
+          />
           <span className="flex-1 text-[13px] text-body truncate">{a.name}</span>
           {a.size_bytes > 0 && (
             <span className="text-[11px] text-muted-soft shrink-0">{fmtBytes(a.size_bytes)}</span>
@@ -51,6 +115,11 @@ function AssetsTooltip({ assets, anchorEl }: { assets: types.ReleaseAsset[]; anc
           )}
         </div>
       ))}
+      {hasAnyDownloads && (
+        <div className="mt-2 pt-2 border-t border-hairline flex justify-center">
+          <DownloadPieChart assets={assets} />
+        </div>
+      )}
     </div>,
     document.body
   )
