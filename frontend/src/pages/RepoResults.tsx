@@ -1,4 +1,8 @@
+import { useRef, useState } from 'react'
+import { toPng } from 'html-to-image'
 import { useRepo } from '../context/RepoContext'
+import { ExportCard } from '../components/export/ExportCard'
+import { SaveExportPNG } from '../../wailsjs/go/main/App'
 import { t } from '../tokens'
 import { fmt, fmtKB, timeAgo } from '../helpers/format'
 import { getDaysSinceLastPush, getTotalDownloads } from '../helpers/insights'
@@ -80,14 +84,41 @@ function RepoDetailsCard({ meta }: { meta: types.RepoMeta }) {
 
 export function RepoResults() {
   const { bundle } = useRepo()
+  const exportCardRef = useRef<HTMLDivElement>(null)
+  const [exporting, setExporting] = useState(false)
+
   if (!bundle) return null
 
   const daysSinceLastPush = getDaysSinceLastPush(bundle.meta?.pushed_at)
   const totalDownloads = getTotalDownloads(bundle.releases)
 
+  async function handleExport() {
+    if (!exportCardRef.current) return
+    setExporting(true)
+    try {
+      const dataUrl = await toPng(exportCardRef.current, {
+        pixelRatio: 2,
+        backgroundColor: '#fafafa',
+      })
+      const base64 = dataUrl.split(',')[1]
+      const slug = bundle!.meta?.full_name?.replace('/', '_') ?? 'repo'
+      await SaveExportPNG(base64, `${slug}_opensus.png`)
+    } finally {
+      setExporting(false)
+    }
+  }
+
   return (
+    <>
+      {/* Off-screen export card — rendered but not visible */}
+      <div style={{ position: 'absolute', left: -9999, top: 0, pointerEvents: 'none', zIndex: -1 }}>
+        <div ref={exportCardRef}>
+          <ExportCard bundle={bundle} />
+        </div>
+      </div>
+
     <main className="max-w-300 mx-auto px-8 pb-24">
-      <RepoHeader meta={bundle.meta} cachedAt={bundle.cached_at} />
+      <RepoHeader meta={bundle.meta} cachedAt={bundle.cached_at} onExport={handleExport} exporting={exporting} />
 
       {bundle.errors && <ErrorBanner errors={bundle.errors} />}
 
@@ -144,5 +175,6 @@ export function RepoResults() {
 
       <TagList tags={bundle.tags ?? []} />
     </main>
+    </>
   )
 }

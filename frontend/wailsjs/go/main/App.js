@@ -26,6 +26,10 @@ export function LoadHistory() {
   return window['go']['main']['App']['LoadHistory']();
 }
 
+export function SaveExportPNG(arg1, arg2) {
+  return window['go']['main']['App']['SaveExportPNG'](arg1, arg2);
+}
+
 export function SetToken(arg1) {
   return window['go']['main']['App']['SetToken'](arg1);
 }

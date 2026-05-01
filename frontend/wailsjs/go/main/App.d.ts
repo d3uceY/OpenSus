@@ -14,6 +14,8 @@ export function ForceRefresh(arg1:string):Promise<types.RepoBundle>;
 
 export function LoadHistory():Promise<Array<string>>;
 
+export function SaveExportPNG(arg1:string,arg2:string):Promise<void>;
+
 export function SetToken(arg1:string):Promise<void>;
 
 export function Version():Promise<string>;

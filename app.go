@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -11,6 +12,8 @@ import (
 	"OpenSus/backend/cache"
 	"OpenSus/backend/github"
 	"OpenSus/backend/types"
+
+	wailsruntime "github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 // App is the Wails application struct. All exported methods become IPC bindings.
@@ -144,7 +147,27 @@ func (a *App) FetchRepo(repoURL string) (types.RepoBundle, error) {
 	return bundle, nil
 }
 
-// ForceRefresh bypasses the cache and re-fetches the repository data.
+// SaveExportPNG opens a native save-file dialog and writes the given base64-encoded
+// PNG data to the path the user chooses. Returns nil if the user cancels.
+func (a *App) SaveExportPNG(imageBase64 string, defaultFilename string) error {
+	path, err := wailsruntime.SaveFileDialog(a.ctx, wailsruntime.SaveDialogOptions{
+		DefaultFilename: defaultFilename,
+		Filters: []wailsruntime.FileFilter{
+			{DisplayName: "PNG Image (*.png)", Pattern: "*.png"},
+		},
+	})
+	if err != nil {
+		return err
+	}
+	if path == "" {
+		return nil // user cancelled
+	}
+	data, err := base64.StdEncoding.DecodeString(imageBase64)
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(path, data, 0644)
+}
 func (a *App) ForceRefresh(repoURL string) (types.RepoBundle, error) {
 	owner, repo, err := github.ParseOwnerRepo(repoURL)
 	if err != nil {
@@ -160,4 +183,3 @@ func (a *App) ForceRefresh(repoURL string) (types.RepoBundle, error) {
 	a.AddHistory(repoURL)
 	return bundle, nil
 }
-

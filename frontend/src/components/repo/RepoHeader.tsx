@@ -2,14 +2,16 @@ import type { types } from '../../../wailsjs/go/models'
 import { timeAgo } from '../../helpers/format'
 import { BrowserOpenURL } from '../../../wailsjs/runtime/runtime'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { Archive01Icon, GitBranchIcon, Link01Icon } from '@hugeicons/core-free-icons'
+import { Archive01Icon, GitBranchIcon, Link01Icon, ImageDownload02Icon } from '@hugeicons/core-free-icons'
 
 interface Props {
   meta: types.RepoMeta
   cachedAt: string
+  onExport?: () => void
+  exporting?: boolean
 }
 
-export function RepoHeader({ meta, cachedAt }: Props) {
+export function RepoHeader({ meta, cachedAt, onExport, exporting }: Props) {
   const enabledFeatures = [
     meta?.has_issues && 'Issues',
     meta?.has_wiki && 'Wiki',
@@ -47,6 +49,16 @@ export function RepoHeader({ meta, cachedAt }: Props) {
             <HugeiconsIcon icon={GitBranchIcon} size={12} />
             {meta.default_branch}
           </span>
+        )}
+        {onExport && (
+          <button
+            onClick={onExport}
+            disabled={exporting}
+            className="ml-auto flex items-center gap-[7px] px-4 py-[7px] rounded-full border border-hairline-strong bg-transparent text-sm font-medium text-body cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <HugeiconsIcon icon={ImageDownload02Icon} size={14} className="text-muted" />
+            {exporting ? 'Exporting…' : 'Export PNG'}
+          </button>
         )}
       </div>
 
