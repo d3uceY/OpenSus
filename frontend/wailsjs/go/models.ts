@@ -60,6 +60,9 @@ export namespace types {
 	export class ReleaseAsset {
 	    name: string;
 	    download_count: number;
+	    size_bytes: number;
+	    content_type: string;
+	    browser_download_url: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new ReleaseAsset(source);
@@ -69,14 +72,24 @@ export namespace types {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.name = source["name"];
 	        this.download_count = source["download_count"];
+	        this.size_bytes = source["size_bytes"];
+	        this.content_type = source["content_type"];
+	        this.browser_download_url = source["browser_download_url"];
 	    }
 	}
 	export class Release {
 	    tag_name: string;
+	    name: string;
+	    body: string;
 	    // Go type: time
 	    published_at: any;
+	    // Go type: time
+	    created_at: any;
 	    assets: ReleaseAsset[];
 	    total_downloads: number;
+	    prerelease: boolean;
+	    draft: boolean;
+	    author: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new Release(source);
@@ -85,9 +98,15 @@ export namespace types {
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.tag_name = source["tag_name"];
+	        this.name = source["name"];
+	        this.body = source["body"];
 	        this.published_at = this.convertValues(source["published_at"], null);
+	        this.created_at = this.convertValues(source["created_at"], null);
 	        this.assets = this.convertValues(source["assets"], ReleaseAsset);
 	        this.total_downloads = source["total_downloads"];
+	        this.prerelease = source["prerelease"];
+	        this.draft = source["draft"];
+	        this.author = source["author"];
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {
@@ -111,6 +130,9 @@ export namespace types {
 	
 	export class Tag {
 	    name: string;
+	    commit_sha: string;
+	    zipball_url: string;
+	    tarball_url: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new Tag(source);
@@ -119,6 +141,9 @@ export namespace types {
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.name = source["name"];
+	        this.commit_sha = source["commit_sha"];
+	        this.zipball_url = source["zipball_url"];
+	        this.tarball_url = source["tarball_url"];
 	    }
 	}
 	export class RepoMeta {
@@ -133,8 +158,20 @@ export namespace types {
 	    // Go type: time
 	    created_at: any;
 	    // Go type: time
+	    updated_at: any;
+	    // Go type: time
 	    pushed_at: any;
 	    html_url: string;
+	    homepage: string;
+	    topics: string[];
+	    size_kb: number;
+	    default_branch: string;
+	    archived: boolean;
+	    has_issues: boolean;
+	    has_wiki: boolean;
+	    has_discussions: boolean;
+	    has_pages: boolean;
+	    network_count: number;
 	
 	    static createFrom(source: any = {}) {
 	        return new RepoMeta(source);
@@ -151,8 +188,19 @@ export namespace types {
 	        this.language = source["language"];
 	        this.license = source["license"];
 	        this.created_at = this.convertValues(source["created_at"], null);
+	        this.updated_at = this.convertValues(source["updated_at"], null);
 	        this.pushed_at = this.convertValues(source["pushed_at"], null);
 	        this.html_url = source["html_url"];
+	        this.homepage = source["homepage"];
+	        this.topics = source["topics"];
+	        this.size_kb = source["size_kb"];
+	        this.default_branch = source["default_branch"];
+	        this.archived = source["archived"];
+	        this.has_issues = source["has_issues"];
+	        this.has_wiki = source["has_wiki"];
+	        this.has_discussions = source["has_discussions"];
+	        this.has_pages = source["has_pages"];
+	        this.network_count = source["network_count"];
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {

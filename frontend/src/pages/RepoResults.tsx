@@ -1,6 +1,6 @@
 import { useRepo } from '../context/RepoContext'
 import { t } from '../tokens'
-import { fmt, timeAgo } from '../helpers/format'
+import { fmt, fmtKB, timeAgo } from '../helpers/format'
 import { getDaysSinceLastPush, getTotalDownloads } from '../helpers/insights'
 import { StatCard } from '../components/ui/StatCard'
 import { Card } from '../components/ui/Card'
@@ -11,6 +11,72 @@ import { ContributorList } from '../components/repo/ContributorList'
 import { ReleaseList } from '../components/repo/ReleaseList'
 import { ActivityFeed } from '../components/repo/ActivityFeed'
 import { TagList } from '../components/repo/TagList'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { GitBranchIcon } from '@hugeicons/core-free-icons'
+import type { types } from '../../wailsjs/go/models'
+
+function RepoDetailsCard({ meta }: { meta: types.RepoMeta }) {
+  const flags = [
+    { label: 'Issues', on: meta?.has_issues },
+    { label: 'Wiki', on: meta?.has_wiki },
+    { label: 'Discussions', on: meta?.has_discussions },
+    { label: 'Pages', on: meta?.has_pages },
+  ]
+
+  return (
+    <div className="bg-surface-card border border-hairline rounded-2xl p-6 flex flex-col gap-4 relative overflow-hidden">
+      <div
+        className="absolute -top-10 -right-10 w-30 h-30 rounded-full pointer-events-none"
+        style={{ background: `radial-gradient(circle, ${t.gradientMint}55 0%, transparent 70%)` }}
+      />
+      <span className="text-xs font-semibold tracking-[0.96px] uppercase text-muted">
+        Repository Details
+      </span>
+      <div className="flex flex-col gap-3">
+        {meta?.default_branch && (
+          <div className="flex items-center gap-2">
+            <HugeiconsIcon icon={GitBranchIcon} size={14} className="text-muted-soft shrink-0" />
+            <span className="text-[13px] text-muted">Default branch</span>
+            <span className="ml-auto text-[13px] font-medium text-body-strong bg-surface-strong rounded-full px-[10px] py-[2px]">
+              {meta.default_branch}
+            </span>
+          </div>
+        )}
+        {meta?.size_kb > 0 && (
+          <div className="flex items-center justify-between">
+            <span className="text-[13px] text-muted">Repository size</span>
+            <span className="text-[13px] font-medium text-body-strong">{fmtKB(meta.size_kb)}</span>
+          </div>
+        )}
+        {meta?.network_count > 0 && (
+          <div className="flex items-center justify-between">
+            <span className="text-[13px] text-muted">Network forks</span>
+            <span className="text-[13px] font-medium text-body-strong">{fmt(meta.network_count)}</span>
+          </div>
+        )}
+        <div className="border-t border-hairline pt-3">
+          <div className="text-[11px] font-semibold tracking-[0.8px] uppercase text-muted mb-2">
+            Features
+          </div>
+          <div className="grid grid-cols-2 gap-1.5">
+            {flags.map(f => (
+              <div key={f.label} className="flex items-center gap-1.5">
+                <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${f.on ? 'bg-semantic-success' : 'bg-hairline-strong'}`} />
+                <span className={`text-[12px] ${f.on ? 'text-body' : 'text-muted-soft'}`}>{f.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        {meta?.pushed_at && (
+          <div className="flex items-center justify-between border-t border-hairline pt-3">
+            <span className="text-[13px] text-muted">Last pushed</span>
+            <span className="text-[13px] text-body-strong">{timeAgo(meta.pushed_at)}</span>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
 
 export function RepoResults() {
   const { bundle } = useRepo()
@@ -32,7 +98,9 @@ export function RepoResults() {
         <StatCard label="Watchers" value={fmt(bundle.meta?.watchers ?? 0)} />
         <StatCard label="Open Issues" value={fmt(bundle.meta?.open_issues ?? 0)} />
         <StatCard label="Branches" value={String(bundle.branch_count ?? 0)} />
-        <StatCard label="Last Push" value={timeAgo(bundle.meta?.pushed_at)} />
+        {bundle.meta?.size_kb > 0 && (
+          <StatCard label="Size" value={fmtKB(bundle.meta.size_kb)} />
+        )}
         {daysSinceLastPush !== null && (
           <StatCard
             label="Days since push"
@@ -49,17 +117,18 @@ export function RepoResults() {
         )}
       </div>
 
-      {/* 2-up grid */}
-      <div className="grid grid-cols-[repeat(auto-fill,_minmax(300px,_1fr))] gap-4 mb-4">
+      {/* 3-up grid: Languages · Contributors · Repo Details */}
+      <div className="grid grid-cols-[repeat(auto-fill,_minmax(280px,_1fr))] gap-4 mb-4">
         <Card title="Language Distribution" accent={t.gradientLavender}>
           <LanguageBar langs={bundle.languages ?? {}} />
         </Card>
         <Card title="Top Contributors" accent={t.gradientPeach}>
           <ContributorList contributors={bundle.contributors ?? []} />
         </Card>
+        <RepoDetailsCard meta={bundle.meta} />
       </div>
 
-      {/* 2-up grid: scrollable */}
+      {/* 2-up grid: Releases · Activity */}
       <div className="grid grid-cols-[repeat(auto-fill,_minmax(320px,_1fr))] gap-4 mb-4">
         <Card title="Releases" accent={t.gradientSky}>
           <div className="max-h-[340px] overflow-y-auto pr-1">

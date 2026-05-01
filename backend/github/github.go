@@ -102,19 +102,30 @@ func FetchBundle(owner, repo, token string) types.RepoBundle {
 	go func() {
 		defer wg.Done()
 		var raw struct {
-			FullName    string `json:"full_name"`
-			Description string `json:"description"`
-			Stars       int    `json:"stargazers_count"`
-			Forks       int    `json:"forks_count"`
-			Watchers    int    `json:"subscribers_count"`
-			OpenIssues  int    `json:"open_issues_count"`
-			Language    string `json:"language"`
+			FullName    string   `json:"full_name"`
+			Description string   `json:"description"`
+			Stars       int      `json:"stargazers_count"`
+			Forks       int      `json:"forks_count"`
+			Watchers    int      `json:"subscribers_count"`
+			OpenIssues  int      `json:"open_issues_count"`
+			Language    string   `json:"language"`
 			License     *struct {
 				Name string `json:"name"`
 			} `json:"license"`
-			CreatedAt time.Time `json:"created_at"`
-			PushedAt  time.Time `json:"pushed_at"`
-			HTMLURL   string    `json:"html_url"`
+			CreatedAt      time.Time `json:"created_at"`
+			UpdatedAt      time.Time `json:"updated_at"`
+			PushedAt       time.Time `json:"pushed_at"`
+			HTMLURL        string    `json:"html_url"`
+			Homepage       string    `json:"homepage"`
+			Topics         []string  `json:"topics"`
+			Size           int       `json:"size"`
+			DefaultBranch  string    `json:"default_branch"`
+			Archived       bool      `json:"archived"`
+			HasIssues      bool      `json:"has_issues"`
+			HasWiki        bool      `json:"has_wiki"`
+			HasDiscussions bool      `json:"has_discussions"`
+			HasPages       bool      `json:"has_pages"`
+			NetworkCount   int       `json:"network_count"`
 		}
 		if err := c.get(base, &raw); err != nil {
 			fail("meta", err.Error())
@@ -126,17 +137,28 @@ func FetchBundle(owner, repo, token string) types.RepoBundle {
 		}
 		mu.Lock()
 		bundle.Meta = types.RepoMeta{
-			FullName:    raw.FullName,
-			Description: raw.Description,
-			Stars:       raw.Stars,
-			Forks:       raw.Forks,
-			Watchers:    raw.Watchers,
-			OpenIssues:  raw.OpenIssues,
-			Language:    raw.Language,
-			License:     license,
-			CreatedAt:   raw.CreatedAt,
-			PushedAt:    raw.PushedAt,
-			HTMLURL:     raw.HTMLURL,
+			FullName:       raw.FullName,
+			Description:    raw.Description,
+			Stars:          raw.Stars,
+			Forks:          raw.Forks,
+			Watchers:       raw.Watchers,
+			OpenIssues:     raw.OpenIssues,
+			Language:       raw.Language,
+			License:        license,
+			CreatedAt:      raw.CreatedAt,
+			UpdatedAt:      raw.UpdatedAt,
+			PushedAt:       raw.PushedAt,
+			HTMLURL:        raw.HTMLURL,
+			Homepage:       raw.Homepage,
+			Topics:         raw.Topics,
+			SizeKB:         raw.Size,
+			DefaultBranch:  raw.DefaultBranch,
+			Archived:       raw.Archived,
+			HasIssues:      raw.HasIssues,
+			HasWiki:        raw.HasWiki,
+			HasDiscussions: raw.HasDiscussions,
+			HasPages:       raw.HasPages,
+			NetworkCount:   raw.NetworkCount,
 		}
 		mu.Unlock()
 	}()
@@ -175,10 +197,21 @@ func FetchBundle(owner, repo, token string) types.RepoBundle {
 		defer wg.Done()
 		var raw []struct {
 			TagName     string    `json:"tag_name"`
+			Name        string    `json:"name"`
+			Body        string    `json:"body"`
 			PublishedAt time.Time `json:"published_at"`
-			Assets      []struct {
-				Name          string `json:"name"`
-				DownloadCount int    `json:"download_count"`
+			CreatedAt   time.Time `json:"created_at"`
+			Prerelease  bool      `json:"prerelease"`
+			Draft       bool      `json:"draft"`
+			Author      struct {
+				Login string `json:"login"`
+			} `json:"author"`
+			Assets []struct {
+				Name               string `json:"name"`
+				DownloadCount      int    `json:"download_count"`
+				Size               int64  `json:"size"`
+				ContentType        string `json:"content_type"`
+				BrowserDownloadURL string `json:"browser_download_url"`
 			} `json:"assets"`
 		}
 		if err := c.get(base+"/releases?per_page=10", &raw); err != nil {
@@ -190,14 +223,26 @@ func FetchBundle(owner, repo, token string) types.RepoBundle {
 			assets := make([]types.ReleaseAsset, len(r.Assets))
 			total := 0
 			for j, a := range r.Assets {
-				assets[j] = types.ReleaseAsset{Name: a.Name, DownloadCount: a.DownloadCount}
+				assets[j] = types.ReleaseAsset{
+					Name:               a.Name,
+					DownloadCount:      a.DownloadCount,
+					SizeBytes:          a.Size,
+					ContentType:        a.ContentType,
+					BrowserDownloadURL: a.BrowserDownloadURL,
+				}
 				total += a.DownloadCount
 			}
 			result[i] = types.Release{
 				TagName:        r.TagName,
+				Name:           r.Name,
+				Body:           r.Body,
 				PublishedAt:    r.PublishedAt,
+				CreatedAt:      r.CreatedAt,
 				Assets:         assets,
 				TotalDownloads: total,
+				Prerelease:     r.Prerelease,
+				Draft:          r.Draft,
+				Author:         r.Author.Login,
 			}
 		}
 		mu.Lock()
@@ -272,7 +317,12 @@ func FetchBundle(owner, repo, token string) types.RepoBundle {
 	go func() {
 		defer wg.Done()
 		var raw []struct {
-			Name string `json:"name"`
+			Name       string `json:"name"`
+			ZipballURL string `json:"zipball_url"`
+			TarballURL string `json:"tarball_url"`
+			Commit     struct {
+				SHA string `json:"sha"`
+			} `json:"commit"`
 		}
 		if err := c.get(base+"/tags?per_page=5", &raw); err != nil {
 			fail("tags", err.Error())
@@ -280,7 +330,12 @@ func FetchBundle(owner, repo, token string) types.RepoBundle {
 		}
 		result := make([]types.Tag, len(raw))
 		for i, tag := range raw {
-			result[i] = types.Tag{Name: tag.Name}
+			result[i] = types.Tag{
+				Name:       tag.Name,
+				CommitSHA:  tag.Commit.SHA,
+				ZipballURL: tag.ZipballURL,
+				TarballURL: tag.TarballURL,
+			}
 		}
 		mu.Lock()
 		bundle.Tags = result
