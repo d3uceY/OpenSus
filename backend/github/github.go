@@ -106,7 +106,7 @@ func FetchBundle(owner, repo, token string) types.RepoBundle {
 			Description string `json:"description"`
 			Stars       int    `json:"stargazers_count"`
 			Forks       int    `json:"forks_count"`
-			Watchers    int    `json:"watchers_count"`
+			Watchers    int    `json:"subscribers_count"`
 			OpenIssues  int    `json:"open_issues_count"`
 			Language    string `json:"language"`
 			License     *struct {

@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import type { types } from '../../../wailsjs/go/models'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { Download01Icon, Package01Icon } from '@hugeicons/core-free-icons'
@@ -8,10 +9,25 @@ interface Props {
   releases: types.Release[]
 }
 
-function AssetsTooltip({ assets }: { assets: types.ReleaseAsset[] }) {
-  if (!assets || assets.length === 0) return null
-  return (
-    <div className="absolute right-0 top-full mt-1.5 z-50 bg-surface-card border border-hairline rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.1)] p-3 min-w-[200px] flex flex-col gap-1.5 pointer-events-none">
+function AssetsTooltip({ assets, anchorEl }: { assets: types.ReleaseAsset[]; anchorEl: HTMLElement | null }) {
+  const [pos, setPos] = useState<{ top: number; right: number } | null>(null)
+
+  useEffect(() => {
+    if (!anchorEl) return
+    const rect = anchorEl.getBoundingClientRect()
+    setPos({
+      top: rect.bottom + window.scrollY + 6,
+      right: window.innerWidth - rect.right,
+    })
+  }, [anchorEl])
+
+  if (!assets || assets.length === 0 || !pos) return null
+
+  return createPortal(
+    <div
+      style={{ position: 'absolute', top: pos.top, right: pos.right }}
+      className="z-[9999] bg-surface-card border border-hairline rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.1)] p-3 min-w-[200px] flex flex-col gap-1.5 pointer-events-none"
+    >
       <div className="text-[11px] font-semibold tracking-[0.8px] uppercase text-muted mb-1">Assets</div>
       {assets.map(a => (
         <div key={a.name} className="flex items-center gap-2">
@@ -23,12 +39,14 @@ function AssetsTooltip({ assets }: { assets: types.ReleaseAsset[] }) {
           </span>
         </div>
       ))}
-    </div>
+    </div>,
+    document.body
   )
 }
 
 export function ReleaseList({ releases }: Props) {
   const [hovered, setHovered] = useState<string | null>(null)
+  const anchorRefs = useRef<Record<string, HTMLDivElement | null>>({})
 
   if (!releases || releases.length === 0) {
     return <span className="text-muted-soft text-sm">No releases</span>
@@ -50,14 +68,16 @@ export function ReleaseList({ releases }: Props) {
           )}
           {r.assets && r.assets.length > 0 && (
             <div
-              className="relative"
+              ref={el => { anchorRefs.current[r.tag_name] = el }}
               onMouseEnter={() => setHovered(r.tag_name)}
               onMouseLeave={() => setHovered(null)}
             >
               <button className="w-[26px] h-[26px] rounded-full bg-surface-strong flex items-center justify-center cursor-default">
                 <HugeiconsIcon icon={Package01Icon} size={13} className="text-body-strong" />
               </button>
-              {hovered === r.tag_name && <AssetsTooltip assets={r.assets} />}
+              {hovered === r.tag_name && (
+                <AssetsTooltip assets={r.assets} anchorEl={anchorRefs.current[r.tag_name]} />
+              )}
             </div>
           )}
         </div>
