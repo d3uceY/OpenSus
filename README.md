@@ -4,7 +4,8 @@
   <p>A desktop app for analysing GitHub repository activity and insights.</p>
   <p>Paste any public GitHub URL and instantly see contributors, releases, commit history, languages, branches, tags, and recent activity, all in one place.</p>
 </div>
-<img width="1889" height="1105" alt="image" src="https://github.com/user-attachments/assets/fa68fee9-5692-4078-b4f4-acf22265e7d1" />
+<img width="2400" height="1698" alt="striker561_Avnac-Studio_opensus" src="https://github.com/user-attachments/assets/5d34974b-c8cc-450a-952a-4ce758741170" />
+
 
 
 ---
