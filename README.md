@@ -4,7 +4,8 @@
   <p>A desktop app for analysing GitHub repository activity and insights.</p>
   <p>Paste any public GitHub URL and instantly see contributors, releases, commit history, languages, branches, tags, and recent activity, all in one place.</p>
 </div>
-<img width="1274" height="893" alt="image" src="https://github.com/user-attachments/assets/847bf7ca-d45e-4734-a031-db5535e61a39" />
+<img width="1889" height="1105" alt="image" src="https://github.com/user-attachments/assets/fa68fee9-5692-4078-b4f4-acf22265e7d1" />
+
 
 ---
 
@@ -18,6 +19,9 @@ Always downloads the **latest release**.
 | **macOS** (Apple Silicon) | [![macOS ARM64](https://img.shields.io/badge/macOS-arm64-000000?style=for-the-badge&logo=apple)](https://github.com/d3uceY/OpenSus/releases/latest/download/OpenSus-macos-arm64.dmg) |
 | **macOS** (Intel) | [![macOS AMD64](https://img.shields.io/badge/macOS-amd64-000000?style=for-the-badge&logo=apple)](https://github.com/d3uceY/OpenSus/releases/latest/download/OpenSus-macos-amd64.dmg) |
 | **Linux** (amd64) | [![Linux](https://img.shields.io/badge/Linux-amd64-FCC624?style=for-the-badge&logo=linux&logoColor=black)](https://github.com/d3uceY/OpenSus/releases/latest/download/OpenSus-linux-amd64) |
+
+<img width="1889" height="1034" alt="image" src="https://github.com/user-attachments/assets/d5a0fe92-84f7-4801-9215-6eccda0f1f35" />
+
 
 > All assets for every release are also available on the [Releases page](https://github.com/d3uceY/OpenSus/releases).
 
